@@ -1,5 +1,4 @@
 /*
- * Author: Adnan Utayim
  * October 13, 2017
  * Skeleton Adopted and Modified
  * From learnopengl.com
@@ -17,7 +16,6 @@
 #include "vector"
 
 using namespace std;
-
 
 class VertexArrayObject {
 
@@ -41,19 +39,20 @@ class VertexArrayObject {
 	VertexArrayObject();
 	~VertexArrayObject();
 	void setVisibility(bool);	
-	void setModelMatrix(glm::mat4&);
+	void setModelMatrix(glm::mat4 &); 
 	void setDrawingMode(modes);
 	void setPrimitive(modes);
+	void clear(void);
 
 	// Static Routines
-	static void setViewMatrix(glm::mat4&);
-	static void setProjectionMatrix(glm::mat4&);
+	static void setViewMatrix(glm::mat4 &);
+	static void setProjectionMatrix(glm::mat4 &);
 	static void registerShaderProgram(GLuint shader_program);
 
 
 	// Specialized Routines
 	void setGeometry(std::vector<glm::vec3> &);
-	void setTopology(std::vector<GLushort> &);
+	void setTopology(std::vector<GLuint> &);
 	void draw();
 
 };

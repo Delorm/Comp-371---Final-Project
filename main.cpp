@@ -1,5 +1,5 @@
 /*
- * Author: Adnan Utayim
+ * COMP 371: Final Project
  * October 12, 2017
  * Skeleton Adopted and Modified
  * From learnopengl.com
@@ -19,32 +19,32 @@
 
 using namespace std;
 
-
-// Tweakable Constant Variables
+// Configurable Constant Variables
 
 // Constant Variables
-const GLuint INITIAL_WIDTH = 800;
-const GLuint INITIAL_HEIGHT = 800;
+const float PI = 3.14159265359f;
 const float BACKGROUND_COLOR = 0.4f; 
-const float POINT_SIZE = 5.0f;
+const float PROJ_FAR_PLANE = 100.0f;
+const GLuint INITIAL_WIDTH = 1280;
+const GLuint INITIAL_HEIGHT = 720;
 const glm::mat4 IDENTITY = glm::mat4(1.0f);
+const glm::mat4 ORIGIN = glm::mat4(0.0f);
 
 // Global Variables
 bool close_window = false;
 std::vector<VertexArrayObject> vaos;
-
-
 glm::vec3 center(0.0f, 0.0f, 0.0f);
 glm::vec3 up(0.0f, 1.0f, 0.0f);
-glm::vec3 eye(0.0f, 0.0f, 3.0f);
+glm::vec3 eye(0.0f, 0.0f, 5.0f);
 
 
 // Prototypes definition
-void keyCallback(GLFWwindow* window, int key, int scandoe, int action, int mode);
-glm::mat4 setCameraPosition(void);
 void initGl(void);
 void drawGl(void);
-void registerCallbacks(GLFWwindow* window);
+void keyCallback(GLFWwindow*, int, int, int, int);
+void registerCallbacks(GLFWwindow*);
+void windowSizeCallback(GLFWwindow*, int, int); 
+glm::mat4 setCameraPosition(void);
 
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode) {
@@ -59,12 +59,27 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 void initGl() {
 
     // Set Projection Matrix 
-    glm::mat4 projection_matrix = glm::perspective(45.0f, (GLfloat)INITIAL_WIDTH / (GLfloat)INITIAL_HEIGHT, 0.0f, 100.0f);
+    glm::mat4 projection_matrix = glm::perspective(45.0f, (GLfloat)INITIAL_WIDTH / (GLfloat)INITIAL_HEIGHT, 1.0f, PROJ_FAR_PLANE);
     VertexArrayObject::setProjectionMatrix(projection_matrix);
 
-
-
     std::vector<glm::vec3> vertices;
+    std::vector<GLuint> edges;
+    VertexArrayObject vao = VertexArrayObject();
+
+    // Example : Drawing One Triangle
+    // Using Vertices Only
+    vertices.push_back(glm::vec3(0.0f, 0.0f, 0.0f));
+    vertices.push_back(up);
+    vertices.push_back(glm::vec3(-1.0f, 0.0f, 0.0f));
+    vao.setGeometry(vertices);
+    vao.setDrawingMode(VertexArrayObject::VERTICES);
+    vao.setPrimitive(VertexArrayObject::TRIANGLES);
+    vaos.push_back(vao);
+    vao.clear(); vertices.clear();
+
+    
+    // Example: Drawing Three Triangels
+    // Using indices
     vertices.push_back(glm::vec3(0.0f, 0.0f, 0.0f));	//0
     vertices.push_back(glm::vec3(1.0f, 1.0f, 0.0f));	//1
     vertices.push_back(glm::vec3(0.0f, 1.0f, 0.0f));	//2
@@ -75,20 +90,18 @@ void initGl() {
     vertices.push_back(glm::vec3(-0.5f, 1.0f, 0.0f));	//7
     vertices.push_back(glm::vec3(-1.0f, 0.5f, 0.0f));	//8
     
-    std::vector<GLushort> edges;
     edges.push_back(0); edges.push_back(1); edges.push_back(2); edges.push_back(3); 
     edges.push_back(4); edges.push_back(5); edges.push_back(6); 
     edges.push_back(7); edges.push_back(8); 
 
-    VertexArrayObject vao = VertexArrayObject();
     vao.setGeometry(vertices);
     vao.setTopology(edges);
     vao.setDrawingMode(VertexArrayObject::ELEMENTS);
-    glm::mat4 translate = glm::translate(IDENTITY, glm::vec3(1.0f, 0.0f, 0.0f));
+    vao.setPrimitive(VertexArrayObject::TRIANGLES);
+    glm::mat4 translate = glm::translate(IDENTITY, glm::vec3(2.0f, 0.0f, 0.0f));
     vao.setModelMatrix(translate);
     vaos.push_back(vao);
-
-
+    vao.clear(); vertices.clear(); edges.clear();
 
 }
 
@@ -97,11 +110,11 @@ void drawGl() {
     // One View Matrix per Iteration
     glm::mat4 view_matrix = setCameraPosition();
     VertexArrayObject::setViewMatrix(view_matrix);
-  
-    glPointSize(POINT_SIZE); 
-    vaos[0].draw();
 
-
+    // Draw All Objects
+    for (uint i = 0; i < vaos.size(); i++) {
+	vaos[i].draw();
+    }
 }
 
 
@@ -126,12 +139,13 @@ int main() {
     {
 	glfwPollEvents();
 	glClearColor(BACKGROUND_COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Run Drawing function
 	drawGl();
 
 	glfwSwapBuffers(window);
+	glfwSwapInterval(1);
     }
 
     glfwTerminate();
@@ -147,4 +161,13 @@ glm::mat4 setCameraPosition() {
 
 void registerCallbacks(GLFWwindow* window) {
     glfwSetKeyCallback(window, keyCallback);
+    glfwSetWindowSizeCallback(window, windowSizeCallback);
+}
+
+void windowSizeCallback(GLFWwindow* window, int width, int height) {
+    // Define the new Viewport Dimensions{
+    glfwGetFramebufferSize(window, & width, &height);
+    glViewport(0, 0, width, height);
+    glm::mat4 projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 1.0f, PROJ_FAR_PLANE);
+    VertexArrayObject::setProjectionMatrix(projection_matrix);
 }

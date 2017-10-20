@@ -105,6 +105,7 @@ GLFWwindow* GlUtilities::setupGlWindow(const GLuint & global_width, const GLuint
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3); 
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GL_DEPTH_BITS, 24);
 
     GLFWwindow* window = glfwCreateWindow(global_width, global_height, "Load one cube", nullptr, nullptr);
     if (window == nullptr)
@@ -114,6 +115,10 @@ GLFWwindow* GlUtilities::setupGlWindow(const GLuint & global_width, const GLuint
 	return NULL;
     }   
     glfwMakeContextCurrent(window);
+
+    // Enable Depth Test
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
 
     // Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
     glewExperimental = GL_TRUE;
@@ -127,7 +132,6 @@ GLFWwindow* GlUtilities::setupGlWindow(const GLuint & global_width, const GLuint
     // Define the viewport dimensions
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
-
     glViewport(0, 0, width, height);
 
     return window;

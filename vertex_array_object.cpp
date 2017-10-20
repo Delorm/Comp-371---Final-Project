@@ -1,5 +1,4 @@
 /*
- * Author: Adnan Utayim
  * October 13, 2017
  * Skeleton Adopted and Modified
  * From learnopengl.com
@@ -27,15 +26,20 @@ GLuint VertexArrayObject::shader_program = 0;
 
 // Basic Rountines
 VertexArrayObject::VertexArrayObject() {
-    m_matrix = glm::mat4(1.0f);
-    glGenVertexArrays(1, &vao_loc);
-    visibility = true;
-    drawing_mode = VERTICES;
-    primitive = POINTS;
+    this->clear();
 }
+
 
 VertexArrayObject::~VertexArrayObject() {
 
+}
+
+void VertexArrayObject::clear(void) {
+    m_matrix = glm::mat4(1.0f);
+    glGenVertexArrays(1, &vao_loc);
+    visibility = true;
+    drawing_mode = ELEMENTS;
+    primitive = POINTS;
 }
 
 void VertexArrayObject::setVisibility(bool visibility) {
@@ -92,7 +96,7 @@ void VertexArrayObject::setGeometry(std::vector<glm::vec3>& vertices) {
 
 }
 
-void VertexArrayObject::setTopology(std::vector<GLushort>& edges) {
+void VertexArrayObject::setTopology(std::vector<GLuint>& edges) {
 
     topology_size = edges.size();
     GLuint ebo_loc;
@@ -101,7 +105,7 @@ void VertexArrayObject::setTopology(std::vector<GLushort>& edges) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_loc);
     glBufferData(
 	    GL_ELEMENT_ARRAY_BUFFER, 
-	    edges.size() * sizeof(GLushort), 
+	    edges.size() * sizeof(GLuint), 
 	    &edges.front(), 
 	    GL_STATIC_DRAW
 	    );
@@ -116,15 +120,13 @@ void VertexArrayObject::draw() {
     glm::mat4 mvp_matrix = vp_matrix * m_matrix;
     glUniformMatrix4fv(mvp_loc, 1, GL_FALSE, glm::value_ptr(mvp_matrix));
 
-
     int renderring_mode = (primitive == POINTS) ? GL_POINTS : GL_TRIANGLES;
     glBindVertexArray(vao_loc);
     if (drawing_mode == VERTICES) {
 	glDrawArrays(renderring_mode, 0, geometry_size);
     } else {
-	glDrawElements(GL_TRIANGLES, topology_size, GL_UNSIGNED_SHORT, nullptr);
+	glDrawElements(renderring_mode, topology_size, GL_UNSIGNED_INT, nullptr);
     }
     glBindVertexArray(0);
 }
-
 
