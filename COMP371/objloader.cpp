@@ -1,9 +1,8 @@
 #include <vector>
 #include <stdio.h>
 #include <cstring>
-
-#include <glm.hpp>
-
+#include <string>
+#include <glm/glm.hpp>
 #include "objloader.hpp"
 
 #pragma warning(disable:4996)

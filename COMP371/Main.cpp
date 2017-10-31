@@ -3,16 +3,24 @@
 
 #include "stdafx.h"
 
-#include "..\glew\glew.h"	// include GL Extension Wrangler
-#include "..\glfw\glfw3.h"	// include GLFW helper library
 #include <stdio.h>
 #include <iostream>
 #include <string>
 #include <fstream>
-#include "glm.hpp"
-#include "gtc/matrix_transform.hpp"
-#include "gtc/type_ptr.hpp"
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
 #include "objloader.hpp"  //include the object loader
+
+#ifdef __linux__ 
+    //linux code goes here
+    #include "GL/glew.h"	// include GL Extension Wrangler
+    #include "GLFW/glfw3.h"	// include GLFW helper library
+#elif _WIN32
+    // windows code goes here
+    #include "..\glew\glew.h"	// include GL Extension Wrangler
+    #include "..\glfw\glfw3.h"	// include GLFW helper library
+#endif
 
 using namespace std;
 
