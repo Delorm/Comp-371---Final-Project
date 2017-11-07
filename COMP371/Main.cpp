@@ -16,6 +16,7 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "vertex_array_object.hpp"
 #include "gl_utils.hpp"
+#include "CImg.hpp"
 
 #ifdef __linux__ 
     //linux code goes here
@@ -34,7 +35,7 @@ using namespace std;
 // Constant Variables
 const float PI = 3.14159265359f;
 const float BACKGROUND_COLOR = 0.4f; 
-const float PROJ_FAR_PLANE = 100.0f;
+const float PROJ_FAR_PLANE = 1000.0f;
 const GLuint INITIAL_WIDTH = 1280;
 const GLuint INITIAL_HEIGHT = 720;
 const glm::mat4 IDENTITY = glm::mat4(1.0f);
@@ -55,6 +56,7 @@ void keyCallback(GLFWwindow*, int, int, int, int);
 void registerCallbacks(GLFWwindow*);
 void windowSizeCallback(GLFWwindow*, int, int); 
 glm::mat4 setCameraPosition(void);
+std::vector<GLuint> findIndices(int width, int height); 
 
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode) {
@@ -62,6 +64,11 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	case GLFW_KEY_X:
 	    close_window = true;
 	    break;
+
+	case GLFW_KEY_S:
+	    eye = eye + glm::vec3(0, 0, +10);
+	    break;
+
     }
 }
 
@@ -113,6 +120,37 @@ void initGl() {
     vao.setModelMatrix(translate);
     vaos.push_back(vao);
     vao.clear(); vertices.clear(); edges.clear();
+
+
+    // Load Heightmap
+    cimg_library::CImg<unsigned char> image("resources/depth.bmp");
+
+    for (int z = 0; z < image.height(); z++) {
+	for (int x = 0; x < image.width(); x++) {
+	    vertices.push_back(glm::vec3(x, image(x, z), z));
+	}
+    }   
+    cout << image.width() << "x" << image.height() << endl;
+    cout << vertices.size() << endl;
+    edges = findIndices(image.width(), image.height());
+
+    
+    glm::mat4 model_matrix = glm::translate(IDENTITY, glm::vec3(
+		(float)-image.width() / 2.0f, 
+		0.0f, 
+		(float)-image.height() / 2.0f
+		));
+		
+
+    vao.setGeometry(vertices);
+    vao.setTopology(edges);
+    vao.setDrawingMode(VertexArrayObject::ELEMENTS);
+    vao.setPrimitive(VertexArrayObject::TRIANGLES);
+    vao.setModelMatrix(model_matrix);
+    vaos.push_back(vao);
+    vao.clear(); edges.clear(); 
+
+
 
 }
 
@@ -182,3 +220,32 @@ void windowSizeCallback(GLFWwindow* window, int width, int height) {
     glm::mat4 projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 1.0f, PROJ_FAR_PLANE);
     VertexArrayObject::setProjectionMatrix(projection_matrix);
 }
+
+
+std::vector<GLuint> findIndices(int width, int height) {
+
+    std::vector<GLuint> indices;
+
+    // First Pass
+    for (int i = 0; i < width * (height - 1); i++) {
+	int x = i % width;
+	int y = i / width;
+	if (x + 1 == width) continue;
+	indices.push_back(i);
+	indices.push_back((y + 1) * width + x);
+	indices.push_back(i+1);
+    }
+
+    // Second Pass
+    for (int i = width; i < width * height; i++) {
+	int x = i % width;
+	int y = i / width;
+	if (x + 1 == width) continue;
+	indices.push_back(i);
+	indices.push_back(i+1);
+	indices.push_back((y - 1) * width + (x + 1));
+    }
+
+    return indices;
+}
+
