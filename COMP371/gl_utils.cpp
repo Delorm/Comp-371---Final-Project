@@ -10,6 +10,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "gl_utils.hpp"
+#include "vertex_array_object.hpp"
 #include "stdio.h"
 #include <iostream>
 #include <cstring>
@@ -108,7 +109,7 @@ GLuint GlUtilities::loadShaders() {
 
 }
 
-GLFWwindow* GlUtilities::setupGlWindow(const GLuint & global_width, const GLuint & global_height) {
+GLFWwindow* GlUtilities::setupGlWindow(GLuint global_width, GLuint global_height) {
 
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); 

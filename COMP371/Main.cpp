@@ -14,8 +14,9 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
-#include "gl_utils.hpp"
 #include "vertex_array_object.hpp"
+#include "gl_utils.hpp"
+
 #ifdef __linux__ 
     //linux code goes here
     #include "GL/glew.h"	// include GL Extension Wrangler
@@ -122,7 +123,7 @@ void drawGl() {
     VertexArrayObject::setViewMatrix(view_matrix);
 
     // Draw All Objects
-    for (uint i = 0; i < vaos.size(); i++) {
+    for (unsigned int i = 0; i < vaos.size(); i++) {
 	vaos[i].draw();
     }
 }

@@ -21,7 +21,7 @@
 class GlUtilities {
     public: 
 	static GLuint loadShaders();
-	static GLFWwindow* setupGlWindow(const GLuint & width, const GLuint & height);
+	static GLFWwindow* setupGlWindow(GLuint width, GLuint height);
 };
 
 #endif

@@ -2,8 +2,9 @@
 #include <stdio.h>
 #include <cstring>
 #include <string>
-#include <glm/glm.hpp>
+#include "glm/glm.hpp"
 #include "objloader.hpp"
+
 
 #pragma warning(disable:4996)
 
