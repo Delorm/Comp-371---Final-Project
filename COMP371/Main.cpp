@@ -39,19 +39,22 @@ const float PROJ_FAR_PLANE = 1000.0f;
 const GLuint INITIAL_WIDTH = 1280;
 const GLuint INITIAL_HEIGHT = 720;
 const glm::mat4 IDENTITY = glm::mat4(1.0f);
-const glm::mat4 ORIGIN = glm::mat4(0.0f);
-const float CAM_STEP = 1.0f;
-const float CHAR_HEIGHt = 2.0f;
+const glm::vec3 ORIGIN = glm::vec3(0.0f);
+const float CHAR_SPEED = 0.3f;
+const float CHAR_HEIGHT = 2.0f;
+const float MOUSE_SENSITIVITY = 0.1f;
 
 // Global Variables
+GLFWwindow* window;
 bool close_window = false;
 std::vector<VertexArrayObject> vaos;
 glm::vec3 center(0.0f, 0.0f, 0.0f);
 glm::vec3 up(0.0f, 1.0f, 0.0f);
 glm::vec3 eye(0.0f, 0.0f, 5.0f);
-float cam_x = 0;
-float cam_y = 0;
-float cam_z = 0;
+
+std::vector<glm::vec3> terrian;
+int terrian_width;
+int terrian_height;
 
 
 // Prototypes definition
@@ -60,31 +63,52 @@ void drawGl(void);
 void keyCallback(GLFWwindow*, int, int, int, int);
 void registerCallbacks(GLFWwindow*);
 void windowSizeCallback(GLFWwindow*, int, int); 
+float mapHeight(float, float); 
 glm::mat4 setCameraPosition(void);
 std::vector<GLuint> findIndices(int width, int height); 
 
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode) {
     switch (key) {
-	case GLFW_KEY_X:
+	case GLFW_KEY_ESCAPE:
 	    close_window = true;
 	    break;
 
-	case GLFW_KEY_S:
-	    cam_z -= CAM_STEP;
+	case GLFW_KEY_W: {
+	    glm::vec3 direction = glm::normalize(center - eye);
+	    glm::vec3 step = CHAR_SPEED * direction;
+	    eye = eye + step;
+	    center = center + step;
 	    break;
+	}
 
-	case GLFW_KEY_W:
-	    cam_z += CAM_STEP;
+	case GLFW_KEY_S: {
+	    glm::vec3 direction = glm::normalize(center - eye);
+	    glm::vec3 step = CHAR_SPEED * direction;
+	    eye = eye - step;
+	    center = center - step;
 	    break;
+	}
 
-	case GLFW_KEY_A:
-	    cam_x -= CAM_STEP;
+	case GLFW_KEY_D: {
+	    glm::vec3 forward = center - eye;
+	    glm::vec3 side = glm::normalize(glm::cross(forward, up)); 
+	    glm::vec3 step = side * CHAR_SPEED;
+	    eye = eye + step;
+	    center = center + step;
 	    break;
+	    
+	}
 
-	case GLFW_KEY_D:
-	    cam_x += CAM_STEP;
+	case GLFW_KEY_A: {
+	    glm::vec3 forward = center - eye;
+	    glm::vec3 side = glm::normalize(glm::cross(forward, up)); 
+	    glm::vec3 step = side * CHAR_SPEED;
+	    eye = eye - step;
+	    center = center - step;
 	    break;
+	}
+
 
     }
 }
@@ -100,63 +124,22 @@ void initGl() {
     std::vector<GLuint> edges;
     VertexArrayObject vao = VertexArrayObject();
 
-    // Example : Drawing One Triangle
-    // Using Vertices Only (No indices)
-    vertices.push_back(glm::vec3(0.0f, 0.0f, 0.0f));
-    vertices.push_back(up);
-    vertices.push_back(glm::vec3(-1.0f, 0.0f, 0.0f));
-    vao.setGeometry(vertices);
-    vao.setDrawingMode(VertexArrayObject::VERTICES);
-    vao.setPrimitive(VertexArrayObject::TRIANGLES);
-    vaos.push_back(vao);
-    vao.clear(); vertices.clear();
-
-
-    
-    // Example: Drawing Three Triangels
-    // Using indices
-    vertices.push_back(glm::vec3(0.0f, 0.0f, 0.0f));	//0
-    vertices.push_back(glm::vec3(1.0f, 1.0f, 0.0f));	//1
-    vertices.push_back(glm::vec3(0.0f, 1.0f, 0.0f));	//2
-    vertices.push_back(glm::vec3(0.0f, 0.0f, 0.0f));	//3
-    vertices.push_back(glm::vec3(-1.0f, 0.0f, 0.0f));	//4
-    vertices.push_back(glm::vec3(0.0f, -1.0f, 0.0f));	//5
-    vertices.push_back(glm::vec3(0.0f, 0.0f, 0.0f));	//6
-    vertices.push_back(glm::vec3(-0.5f, 1.0f, 0.0f));	//7
-    vertices.push_back(glm::vec3(-1.0f, 0.5f, 0.0f));	//8
-    
-    edges.push_back(0); edges.push_back(1); edges.push_back(2); edges.push_back(3); 
-    edges.push_back(4); edges.push_back(5); edges.push_back(6); 
-    edges.push_back(7); edges.push_back(8); 
-
-    vao.setGeometry(vertices);
-    vao.setTopology(edges);
-    vao.setDrawingMode(VertexArrayObject::ELEMENTS);
-    vao.setPrimitive(VertexArrayObject::TRIANGLES);
-    glm::mat4 translate = glm::translate(IDENTITY, glm::vec3(2.0f, 0.0f, 0.0f));
-    vao.setModelMatrix(translate);
-    vaos.push_back(vao);
-    vao.clear(); vertices.clear(); edges.clear();
-
-
     // Load Heightmap
     int map_width, map_height;
-    GlUtilities::createTerrain(vertices, edges, map_width, map_height); 
+    GlUtilities::createTerrain(terrian, edges, terrian_width, terrian_height); 
 
     
     glm::mat4 model_matrix = glm::translate(IDENTITY, glm::vec3(
-		(float)-map_width / 2.0f, 
-		-30.0f, 
-		(float)-map_height / 2.0f
+		(float)-terrian_width / 2.0f, 
+		0.0f, 
+		(float)-terrian_height / 2.0f
 		));
 		
-    vao.setGeometry(vertices);
+    vao.setGeometry(terrian);
     vao.setTopology(edges);
-    vao.setDrawingMode(VertexArrayObject::ELEMENTS);
-    vao.setPrimitive(VertexArrayObject::TRIANGLES);
     vao.setModelMatrix(model_matrix);
     vaos.push_back(vao);
-    vao.clear(); edges.clear(); 
+    edges.clear(); 
 
 }
 
@@ -176,7 +159,7 @@ void drawGl() {
 int main() {
 
     // Initialize Window
-    GLFWwindow* window = GlUtilities::setupGlWindow(INITIAL_WIDTH, INITIAL_HEIGHT); 
+    window = GlUtilities::setupGlWindow(INITIAL_WIDTH, INITIAL_HEIGHT); 
     if (window == NULL) return -1;
 
     // Register Callbacks
@@ -209,10 +192,44 @@ int main() {
 
 glm::mat4 setCameraPosition() {
 
-    eye = glm::vec3(cam_x, cam_y, cam_z);
+    // Get Map Height at eye position
+    float old_eye_y = eye.y;
+    eye.y = mapHeight(eye.x, eye.z);
+    float centerShift = eye.y - old_eye_y;
+    center.y += centerShift;
 
-    glm::mat4 view_matrix;
-    view_matrix = glm::lookAt(eye, center, up);
+    // Mouse Looking around
+    double xpos, ypos;
+    glfwGetCursorPos(window, &xpos, &ypos);
+
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+
+    int screen_center_x = width / 2;
+    int screen_center_y = height / 2;
+    glfwSetCursorPos(window, screen_center_x, screen_center_y);
+
+    double mov_x = xpos - screen_center_x;
+    double mov_y = ypos - screen_center_y;
+
+    glm::mat4 trans = glm::translate(IDENTITY, ORIGIN - (center * 2.0f) + eye);
+
+    // Horizontal Rotation:
+    float rad = (mov_x * MOUSE_SENSITIVITY) * PI / 180.0f;
+    glm::mat4 rot = glm::rotate(IDENTITY, rad, up);
+    glm::vec4 hom_point = glm::vec4(center, 1.0f);
+    hom_point = -trans * rot * trans * hom_point;
+    center = glm::vec3(hom_point);
+
+    // Vertical Rotation:
+    rad = (mov_y *  MOUSE_SENSITIVITY) * PI / 180.0f;
+    glm::vec3 axis = glm::normalize(cross(up, (center - eye)));
+    rot = glm::rotate(IDENTITY, -rad, axis);
+    hom_point = glm::vec4(center, 1.0f);
+    hom_point = -trans * rot * trans * hom_point;
+    center = glm::vec3(hom_point);
+
+    glm::mat4 view_matrix = glm::lookAt(eye, center, up);
     return view_matrix;
 }
 
@@ -227,4 +244,14 @@ void windowSizeCallback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
     glm::mat4 projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 1.0f, PROJ_FAR_PLANE);
     VertexArrayObject::setProjectionMatrix(projection_matrix);
+}
+
+float mapHeight(float x, float z) {
+
+    x += (float)terrian_width / 2.0f;
+    z += (float)terrian_height / 2.0f;
+    int index = terrian_width * (int)z + (int)x;
+
+    float y = terrian[index].y + CHAR_HEIGHT;
+    return y;
 }

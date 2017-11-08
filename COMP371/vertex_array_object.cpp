@@ -46,7 +46,7 @@ void VertexArrayObject::clear(void) {
     glGenVertexArrays(1, &vao_loc);
     visibility = true;
     drawing_mode = ELEMENTS;
-    primitive = POINTS;
+    primitive = TRIANGLES;
 }
 
 void VertexArrayObject::setVisibility(bool visibility) {

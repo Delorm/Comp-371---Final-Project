@@ -145,6 +145,8 @@ GLFWwindow* GlUtilities::setupGlWindow(GLuint global_width, GLuint global_height
 	return NULL;
     }   
 
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+
     // Define the viewport dimensions
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
@@ -177,8 +179,6 @@ void GlUtilities::createTerrain(vector<glm::vec3> & vertices, vector<unsigned in
 	    vertices.push_back(glm::vec3(x, y, z));
 	}
     }   
-    cout << width << "x" << height << endl;
-    cout << vertices.size() << endl;
     edges = findIndices(width, height);
 }
 
