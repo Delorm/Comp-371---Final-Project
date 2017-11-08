@@ -40,6 +40,8 @@ const GLuint INITIAL_WIDTH = 1280;
 const GLuint INITIAL_HEIGHT = 720;
 const glm::mat4 IDENTITY = glm::mat4(1.0f);
 const glm::mat4 ORIGIN = glm::mat4(0.0f);
+const float CAM_STEP = 1.0f;
+const float CHAR_HEIGHt = 2.0f;
 
 // Global Variables
 bool close_window = false;
@@ -47,6 +49,9 @@ std::vector<VertexArrayObject> vaos;
 glm::vec3 center(0.0f, 0.0f, 0.0f);
 glm::vec3 up(0.0f, 1.0f, 0.0f);
 glm::vec3 eye(0.0f, 0.0f, 5.0f);
+float cam_x = 0;
+float cam_y = 0;
+float cam_z = 0;
 
 
 // Prototypes definition
@@ -66,7 +71,19 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	    break;
 
 	case GLFW_KEY_S:
-	    eye = eye + glm::vec3(0, 0, +10);
+	    cam_z -= CAM_STEP;
+	    break;
+
+	case GLFW_KEY_W:
+	    cam_z += CAM_STEP;
+	    break;
+
+	case GLFW_KEY_A:
+	    cam_x -= CAM_STEP;
+	    break;
+
+	case GLFW_KEY_D:
+	    cam_x += CAM_STEP;
 	    break;
 
     }
@@ -123,25 +140,16 @@ void initGl() {
 
 
     // Load Heightmap
-    cimg_library::CImg<unsigned char> image("resources/depth.bmp");
-
-    for (int z = 0; z < image.height(); z++) {
-	for (int x = 0; x < image.width(); x++) {
-	    vertices.push_back(glm::vec3(x, image(x, z), z));
-	}
-    }   
-    cout << image.width() << "x" << image.height() << endl;
-    cout << vertices.size() << endl;
-    edges = findIndices(image.width(), image.height());
+    int map_width, map_height;
+    GlUtilities::createTerrain(vertices, edges, map_width, map_height); 
 
     
     glm::mat4 model_matrix = glm::translate(IDENTITY, glm::vec3(
-		(float)-image.width() / 2.0f, 
-		0.0f, 
-		(float)-image.height() / 2.0f
+		(float)-map_width / 2.0f, 
+		-30.0f, 
+		(float)-map_height / 2.0f
 		));
 		
-
     vao.setGeometry(vertices);
     vao.setTopology(edges);
     vao.setDrawingMode(VertexArrayObject::ELEMENTS);
@@ -149,8 +157,6 @@ void initGl() {
     vao.setModelMatrix(model_matrix);
     vaos.push_back(vao);
     vao.clear(); edges.clear(); 
-
-
 
 }
 
@@ -203,6 +209,8 @@ int main() {
 
 glm::mat4 setCameraPosition() {
 
+    eye = glm::vec3(cam_x, cam_y, cam_z);
+
     glm::mat4 view_matrix;
     view_matrix = glm::lookAt(eye, center, up);
     return view_matrix;
@@ -220,32 +228,3 @@ void windowSizeCallback(GLFWwindow* window, int width, int height) {
     glm::mat4 projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 1.0f, PROJ_FAR_PLANE);
     VertexArrayObject::setProjectionMatrix(projection_matrix);
 }
-
-
-std::vector<GLuint> findIndices(int width, int height) {
-
-    std::vector<GLuint> indices;
-
-    // First Pass
-    for (int i = 0; i < width * (height - 1); i++) {
-	int x = i % width;
-	int y = i / width;
-	if (x + 1 == width) continue;
-	indices.push_back(i);
-	indices.push_back((y + 1) * width + x);
-	indices.push_back(i+1);
-    }
-
-    // Second Pass
-    for (int i = width; i < width * height; i++) {
-	int x = i % width;
-	int y = i / width;
-	if (x + 1 == width) continue;
-	indices.push_back(i);
-	indices.push_back(i+1);
-	indices.push_back((y - 1) * width + (x + 1));
-    }
-
-    return indices;
-}
-

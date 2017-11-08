@@ -12,9 +12,13 @@
 #include "gl_utils.hpp"
 #include "vertex_array_object.hpp"
 #include "stdio.h"
-#include <iostream>
-#include <cstring>
-#include <string>
+#include "iostream"
+#include "stdlib.h"
+#include "stdio.h"
+#include "cstring"
+#include "string"
+#include "CImg.hpp"
+#include "vector"
 #ifdef __linux__ 
     //linux code goes here
     #include "GL/glew.h"	// include GL Extension Wrangler
@@ -25,8 +29,10 @@
     #include "..\glfw\glfw3.h"	// include GLFW helper library
 #endif
 
-
 using namespace std;
+
+
+const float MESH_MAX_HEIGHT = 20.0f;
 
 GLuint GlUtilities::loadShaders() {
 
@@ -146,3 +152,60 @@ GLFWwindow* GlUtilities::setupGlWindow(GLuint global_width, GLuint global_height
 
     return window;
 }
+
+void GlUtilities::createTerrain(vector<glm::vec3> & vertices, vector<unsigned int> & edges, int & width, int & height) {
+
+    cimg_library::CImg<unsigned char> image("resources/depth.bmp");
+    width = image.width();
+    height = image.height();
+    int max_height = 0;
+    int min_height = (int)INFINITY;
+
+    for (int i = 0; i < width; i++) {
+	for (int j = 0; j < height; j++) {
+	    int current_height = image(i, j); 
+	    if (current_height > max_height) max_height = current_height;
+	    if (current_height < min_height) min_height = current_height;
+	}
+    }   
+    float height_scale = MESH_MAX_HEIGHT / (float)(max_height - min_height);
+
+
+    for (int z = 0; z < height; z++) {
+	for (int x = 0; x < width; x++) {
+	    float y = (image(x, z) - min_height) * height_scale; 
+	    vertices.push_back(glm::vec3(x, y, z));
+	}
+    }   
+    cout << width << "x" << height << endl;
+    cout << vertices.size() << endl;
+    edges = findIndices(width, height);
+}
+
+std::vector<GLuint> GlUtilities::findIndices(int width, int height) {
+
+        std::vector<GLuint> indices;
+
+	    // First Pass
+	    for (int i = 0; i < width * (height - 1); i++) {
+		int x = i % width;
+		int y = i / width;
+		if (x + 1 == width) continue;
+		indices.push_back(i);
+		indices.push_back((y + 1) * width + x);
+		indices.push_back(i+1);
+	    }
+
+	    // Second Pass
+	    for (int i = width; i < width * height; i++) {
+		int x = i % width;
+		int y = i / width;
+		if (x + 1 == width) continue;
+		indices.push_back(i);
+		indices.push_back(i+1);
+		indices.push_back((y - 1) * width + (x + 1));
+	    }
+
+	    return indices;
+}
+
