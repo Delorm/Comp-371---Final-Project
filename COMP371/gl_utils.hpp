@@ -15,6 +15,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "vector"
+#include "list"
 #ifdef __linux__ 
     //linux code goes here
     #include "GL/glew.h"	// include GL Extension Wrangler
@@ -31,8 +32,11 @@ class GlUtilities {
     public: 
 	static GLuint loadShaders();
 	static GLFWwindow* setupGlWindow(GLuint width, GLuint height);
-	static void createTerrain(vector<glm::vec3> &, vector<unsigned int> &, int &, int &);
+	static void createTerrain(vector<glm::vec3> &, int &, int &);
 	static vector<GLuint> findIndices(int, int);
+	static void interpolate(vector<glm::vec3> &, int, float, int &, int &);
+	static void transposeList(std::list<glm::vec3> &, int &, int &);
+	static void catmullRom(std::list<glm::vec3> &, int, int, float, float);
 };
 
 #endif

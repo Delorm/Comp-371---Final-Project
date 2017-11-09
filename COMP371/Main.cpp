@@ -31,6 +31,11 @@
 using namespace std;
 
 // Configurable Constant Variables
+const float CHAR_SPEED = 0.3f;
+const float MOUSE_SENSITIVITY = 0.1f;
+const float CHAR_HEIGHT = 2.0f;
+const int TERRIAN_SKIP = 5.0f;
+const float TERRIAN_STEP = 0.2; 
 
 // Constant Variables
 const float PI = 3.14159265359f;
@@ -40,9 +45,6 @@ const GLuint INITIAL_WIDTH = 1280;
 const GLuint INITIAL_HEIGHT = 720;
 const glm::mat4 IDENTITY = glm::mat4(1.0f);
 const glm::vec3 ORIGIN = glm::vec3(0.0f);
-const float CHAR_SPEED = 0.3f;
-const float CHAR_HEIGHT = 2.0f;
-const float MOUSE_SENSITIVITY = 0.1f;
 
 // Global Variables
 GLFWwindow* window;
@@ -55,7 +57,8 @@ glm::vec3 eye(0.0f, 0.0f, 5.0f);
 std::vector<glm::vec3> terrian;
 int terrian_width;
 int terrian_height;
-
+int terrian_width_points;
+int terrian_height_points;
 
 // Prototypes definition
 void initGl(void);
@@ -77,6 +80,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	case GLFW_KEY_W: {
 	    glm::vec3 direction = glm::normalize(center - eye);
 	    glm::vec3 step = CHAR_SPEED * direction;
+	    step.y = 0;
 	    eye = eye + step;
 	    center = center + step;
 	    break;
@@ -86,6 +90,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	    glm::vec3 direction = glm::normalize(center - eye);
 	    glm::vec3 step = CHAR_SPEED * direction;
 	    eye = eye - step;
+	    step.y = 0;
 	    center = center - step;
 	    break;
 	}
@@ -94,22 +99,21 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	    glm::vec3 forward = center - eye;
 	    glm::vec3 side = glm::normalize(glm::cross(forward, up)); 
 	    glm::vec3 step = side * CHAR_SPEED;
+	    step.y = 0;
 	    eye = eye + step;
 	    center = center + step;
 	    break;
-	    
 	}
 
 	case GLFW_KEY_A: {
 	    glm::vec3 forward = center - eye;
 	    glm::vec3 side = glm::normalize(glm::cross(forward, up)); 
 	    glm::vec3 step = side * CHAR_SPEED;
+	    step.y = 0;
 	    eye = eye - step;
 	    center = center - step;
 	    break;
 	}
-
-
     }
 }
 
@@ -125,9 +129,13 @@ void initGl() {
     VertexArrayObject vao = VertexArrayObject();
 
     // Load Heightmap
-    int map_width, map_height;
-    GlUtilities::createTerrain(terrian, edges, terrian_width, terrian_height); 
+    GlUtilities::createTerrain(terrian, terrian_width, terrian_height); 
+    terrian_width_points = terrian_width;
+    terrian_height_points = terrian_height;
 
+    // Interpolate Terrian
+    GlUtilities::interpolate(terrian, TERRIAN_SKIP, TERRIAN_STEP, terrian_width_points, terrian_height_points); 
+    edges = GlUtilities::findIndices(terrian_width_points, terrian_height_points);
     
     glm::mat4 model_matrix = glm::translate(IDENTITY, glm::vec3(
 		(float)-terrian_width / 2.0f, 
@@ -248,10 +256,11 @@ void windowSizeCallback(GLFWwindow* window, int width, int height) {
 
 float mapHeight(float x, float z) {
 
-    x += (float)terrian_width / 2.0f;
-    z += (float)terrian_height / 2.0f;
-    int index = terrian_width * (int)z + (int)x;
-
+    
+    x = (x + (float)terrian_width / 2.0f); 
+    z = (z + (float)terrian_height / 2.0f);
+    int index = terrian_width_points * (int)z + (int)x;
     float y = terrian[index].y + CHAR_HEIGHT;
+
     return y;
 }
