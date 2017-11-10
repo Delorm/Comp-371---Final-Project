@@ -53,6 +53,7 @@ std::vector<VertexArrayObject> vaos;
 glm::vec3 center(0.0f, 0.0f, 0.0f);
 glm::vec3 up(0.0f, 1.0f, 0.0f);
 glm::vec3 eye(0.0f, 0.0f, 5.0f);
+bool free_look = false;
 
 std::vector<glm::vec3> terrian;
 int terrian_width;
@@ -80,7 +81,9 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	case GLFW_KEY_W: {
 	    glm::vec3 direction = glm::normalize(center - eye);
 	    glm::vec3 step = CHAR_SPEED * direction;
-	    step.y = 0;
+	    if (!free_look) {
+		step.y = 0;
+	    }
 	    eye = eye + step;
 	    center = center + step;
 	    break;
@@ -90,7 +93,9 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	    glm::vec3 direction = glm::normalize(center - eye);
 	    glm::vec3 step = CHAR_SPEED * direction;
 	    eye = eye - step;
-	    step.y = 0;
+	    if (!free_look) {
+		step.y = 0;
+	    }
 	    center = center - step;
 	    break;
 	}
@@ -99,7 +104,9 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	    glm::vec3 forward = center - eye;
 	    glm::vec3 side = glm::normalize(glm::cross(forward, up)); 
 	    glm::vec3 step = side * CHAR_SPEED;
-	    step.y = 0;
+	    if (!free_look) {
+		step.y = 0;
+	    }
 	    eye = eye + step;
 	    center = center + step;
 	    break;
@@ -109,9 +116,18 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	    glm::vec3 forward = center - eye;
 	    glm::vec3 side = glm::normalize(glm::cross(forward, up)); 
 	    glm::vec3 step = side * CHAR_SPEED;
-	    step.y = 0;
+	    if (!free_look) {
+		step.y = 0;
+	    }
 	    eye = eye - step;
 	    center = center - step;
+	    break;
+	}
+
+	case GLFW_KEY_V: {
+	    if (action == GLFW_PRESS) {
+		free_look = !free_look;
+	    }
 	    break;
 	}
     }
@@ -200,11 +216,13 @@ int main() {
 
 glm::mat4 setCameraPosition() {
 
-    // Get Map Height at eye position
-    float old_eye_y = eye.y;
-    eye.y = mapHeight(eye.x, eye.z);
-    float centerShift = eye.y - old_eye_y;
-    center.y += centerShift;
+    // Get Map Height at eye position to clip the character to ground
+    if (!free_look) {
+	float old_eye_y = eye.y;
+	eye.y = mapHeight(eye.x, eye.z);
+	float centerShift = eye.y - old_eye_y;
+	center.y += centerShift;
+    }
 
     // Mouse Looking around
     double xpos, ypos;
