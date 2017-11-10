@@ -5,7 +5,6 @@
  * From learnopengl.com
  */
 
-
 #include "stdio.h"
 #include "iostream"
 #include "string"
@@ -17,6 +16,7 @@
 #include "vertex_array_object.hpp"
 #include "gl_utils.hpp"
 #include "CImg.hpp"
+#include "terrian.hpp"
 
 #ifdef __linux__ 
     //linux code goes here
@@ -34,8 +34,12 @@ using namespace std;
 const float CHAR_SPEED = 0.3f;
 const float MOUSE_SENSITIVITY = 0.1f;
 const float CHAR_HEIGHT = 2.0f;
-const int TERRIAN_SKIP = 5.0f;
-const float TERRIAN_STEP = 0.2; 
+
+// Terrian
+const int T_WIDTH = 500;
+const int T_HEIGHT = 500;
+const float T_STEP = 1.0f; 
+const float T_MAX = 20.0f;
 
 // Constant Variables
 const float PI = 3.14159265359f;
@@ -54,12 +58,11 @@ glm::vec3 center(0.0f, 0.0f, 0.0f);
 glm::vec3 up(0.0f, 1.0f, 0.0f);
 glm::vec3 eye(0.0f, 0.0f, 5.0f);
 bool free_look = false;
+Terrian terrian;
 
-std::vector<glm::vec3> terrian;
+//std::vector<glm::vec3> terrian;
 int terrian_width;
 int terrian_height;
-int terrian_width_points;
-int terrian_height_points;
 
 // Prototypes definition
 void initGl(void);
@@ -144,6 +147,7 @@ void initGl() {
     std::vector<GLuint> edges;
     VertexArrayObject vao = VertexArrayObject();
 
+    /*
     // Load Heightmap
     GlUtilities::createTerrain(terrian, terrian_width, terrian_height); 
     terrian_width_points = terrian_width;
@@ -152,18 +156,26 @@ void initGl() {
     // Interpolate Terrian
     GlUtilities::interpolate(terrian, TERRIAN_SKIP, TERRIAN_STEP, terrian_width_points, terrian_height_points); 
     edges = GlUtilities::findIndices(terrian_width_points, terrian_height_points);
-    
+   */ 
+
+
+    terrian = Terrian(T_WIDTH, T_HEIGHT, T_STEP, T_MAX);
+    vertices = terrian.generateMap();
+    edges = terrian.findIndices();
+
     glm::mat4 model_matrix = glm::translate(IDENTITY, glm::vec3(
-		(float)-terrian_width / 2.0f, 
+		(float)-T_WIDTH / 2.0f, 
 		0.0f, 
-		(float)-terrian_height / 2.0f
+		(float)-T_HEIGHT / 2.0f
 		));
 		
-    vao.setGeometry(terrian);
+		
+
+    vao.setGeometry(vertices);
     vao.setTopology(edges);
     vao.setModelMatrix(model_matrix);
     vaos.push_back(vao);
-    edges.clear(); 
+    vertices.clear(); edges.clear(); 
 
 }
 
@@ -219,7 +231,7 @@ glm::mat4 setCameraPosition() {
     // Get Map Height at eye position to clip the character to ground
     if (!free_look) {
 	float old_eye_y = eye.y;
-	eye.y = mapHeight(eye.x, eye.z);
+	eye.y = mapHeight(eye.x, eye.z) + CHAR_HEIGHT;
 	float centerShift = eye.y - old_eye_y;
 	center.y += centerShift;
     }
@@ -274,11 +286,6 @@ void windowSizeCallback(GLFWwindow* window, int width, int height) {
 
 float mapHeight(float x, float z) {
 
-    
-    x = (x + (float)terrian_width / 2.0f); 
-    z = (z + (float)terrian_height / 2.0f);
-    int index = terrian_width_points * (int)z + (int)x;
-    float y = terrian[index].y + CHAR_HEIGHT;
-
-    return y;
+    return 30;
+    return terrian.getHeight(x, z);     
 }

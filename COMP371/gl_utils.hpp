@@ -1,5 +1,5 @@
 /*
- * Author: Adnan Utayim
+ * COMP 271 Project
  * October 12, 2017
  * Code Adopted and Modified
  * From learnopengl.com
