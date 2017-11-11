@@ -38,8 +38,7 @@ const float CHAR_HEIGHT = 2.0f;
 // Terrian
 const int T_WIDTH = 500;
 const int T_HEIGHT = 500;
-const float T_STEP = 1.0f; 
-const float T_MAX = 20.0f;
+const float T_MAX = 10.0f;
 
 // Constant Variables
 const float PI = 3.14159265359f;
@@ -159,7 +158,7 @@ void initGl() {
    */ 
 
 
-    terrian = Terrian(T_WIDTH, T_HEIGHT, T_STEP, T_MAX);
+    terrian = Terrian(T_WIDTH, T_HEIGHT, T_MAX);
     vertices = terrian.generateMap();
     edges = terrian.findIndices();
 
@@ -285,7 +284,8 @@ void windowSizeCallback(GLFWwindow* window, int width, int height) {
 }
 
 float mapHeight(float x, float z) {
+    float char_x = x + T_WIDTH / 2.0f;
+    float char_z = z + T_HEIGHT / 2.0f;
+    return terrian.getHeight(char_x, char_z);     
 
-    return 30;
-    return terrian.getHeight(x, z);     
 }

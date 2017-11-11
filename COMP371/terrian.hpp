@@ -26,19 +26,26 @@ class Terrian {
     private:
 	int width, height;
 	int max;
-	float step;
 	int seed;
-	int X_MULT = 23562;
-	int Z_MULT = 512351;
+	int X_MULT = 49632;
+	int Z_MULT = 325176;
+	float pi = 3.14159265359f;
+	float** noise_map;
+	float** smooth_noise_map;
 
     public:
 	Terrian() {};
-	Terrian(int, int, float, int);
+	Terrian(int, int, int);
 	std::vector<glm::vec3> generateMap();
 	float getHeight(float, float);
+	float calcNoise(int, int);
 	float getNoise(int, int);
+	float calcSmoothNoise(int, int);
 	float getSmoothNoise(int, int);
+	float interpolate(float, float, float);
+	float getInterpolatedNoise(float, float);
 	vector<GLuint> findIndices();
+	void preCalculateMaps();
 };
 
 #endif
