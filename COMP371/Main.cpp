@@ -17,6 +17,8 @@
 #include "gl_utils.hpp"
 #include "CImg.hpp"
 #include "terrian.hpp"
+#include "objloader.hpp"
+#include "item.hpp"
 
 #ifdef __linux__ 
     //linux code goes here
@@ -34,7 +36,7 @@ using namespace std;
 const float MOUSE_SENSITIVITY = 0.1f;
 const float CHAR_HEIGHT = 2.0f;
 const float WALK_SPEED = 0.2f;
-const float FLY_SPEED = 3.0f;
+const float FLY_SPEED = 2.0f;
 
 // Terrian
 const int T_WIDTH = 500;
@@ -54,7 +56,8 @@ const glm::vec3 ORIGIN = glm::vec3(0.0f);
 // Global Variables
 GLFWwindow* window;
 bool close_window = false;
-std::vector<VertexArrayObject> vaos;
+std::vector<Item> items;
+//std::vector<VertexArrayObject> vaos;
 glm::vec3 center(0.0f, 0.0f, 0.0f);
 glm::vec3 up(0.0f, 1.0f, 0.0f);
 glm::vec3 eye(0.0f, 0.0f, 5.0f);
@@ -145,29 +148,22 @@ void initGl() {
     // Set Projection Matrix 
     glm::mat4 projection_matrix = glm::perspective(45.0f, (GLfloat)INITIAL_WIDTH / (GLfloat)INITIAL_HEIGHT, 1.0f, PROJ_FAR_PLANE);
     VertexArrayObject::setProjectionMatrix(projection_matrix);
+    Item item;
 
-    std::vector<glm::vec3> vertices;
-    std::vector<GLuint> edges;
-    VertexArrayObject vao = VertexArrayObject();
-
+    // Terrian
     terrian = Terrian(T_WIDTH, T_HEIGHT, T_MAX, T_SHIFT);
-    vertices = terrian.generateMap();
-    edges = terrian.findIndices();
+    item.setGeometry(terrian.generateMap());
+    item.setTopology(terrian.findIndices());
+    glm::mat4 model_matrix = glm::translate(IDENTITY, glm::vec3( (float)-T_WIDTH / 2.0f, 0.0f, (float)-T_HEIGHT / 2.0f));
+    item.setModelMatrix(model_matrix);
+    items.push_back(item);
+    item.clear();
 
-    glm::mat4 model_matrix = glm::translate(IDENTITY, glm::vec3(
-		(float)-T_WIDTH / 2.0f, 
-		0.0f, 
-		(float)-T_HEIGHT / 2.0f
-		));
-		
-		
-
-    vao.setGeometry(vertices);
-    vao.setTopology(edges);
-    vao.setModelMatrix(model_matrix);
-    vaos.push_back(vao);
-    vertices.clear(); edges.clear(); 
-
+    // Teapot
+    item.loadObject("resources/teapot.obj");
+    model_matrix = glm::translate(IDENTITY, glm::vec3(0, mapHeight(0, 0), 0));
+    item.setModelMatrix(model_matrix);
+    items.push_back(item);
 }
 
 void drawGl() {
@@ -177,8 +173,8 @@ void drawGl() {
     VertexArrayObject::setViewMatrix(view_matrix);
 
     // Draw All Objects
-    for (unsigned int i = 0; i < vaos.size(); i++) {
-	vaos[i].draw();
+    for (unsigned int i = 0; i < items.size(); i++) {
+	items[i].draw();
     }
 }
 
