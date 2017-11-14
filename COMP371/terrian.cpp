@@ -3,10 +3,11 @@
 
 using namespace std;
 
-Terrian::Terrian(int width, int height, int max) {
+Terrian::Terrian(int width, int height, int max, int shift) {
     this->width = width;
     this->height = height;
     this->max = max;
+    this->shift = shift;
     seed = time(NULL);
     preCalculateMaps();
 }
@@ -26,10 +27,9 @@ std::vector<glm::vec3> Terrian::generateMap() {
 
 float Terrian::getHeight(float x, float z) {
 
-    float total = getInterpolatedNoise(x / 8.0f, z / 8.0f) * max;
-    total += getInterpolatedNoise(x / 4.0f, z / 4.0f) * (max / 3.0f);
-    total += getInterpolatedNoise(x / 2.0f, z / 2.0f) * (max / 9.0f);
-    return total;
+    float total = getInterpolatedNoise(x / 16.0f, z / 16.0f) * max;
+    total += getInterpolatedNoise(x / 8.0f, z / 8.0f) * (max / 3.0f);
+    return total + shift;
 }
 
 float Terrian::calcNoise(int x, int z) {

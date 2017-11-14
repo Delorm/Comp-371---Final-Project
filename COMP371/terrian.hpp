@@ -26,6 +26,7 @@ class Terrian {
     private:
 	int width, height;
 	int max;
+	int shift;
 	int seed;
 	int X_MULT = 49632;
 	int Z_MULT = 325176;
@@ -35,7 +36,7 @@ class Terrian {
 
     public:
 	Terrian() {};
-	Terrian(int, int, int);
+	Terrian(int, int, int, int);
 	std::vector<glm::vec3> generateMap();
 	float getHeight(float, float);
 	float calcNoise(int, int);

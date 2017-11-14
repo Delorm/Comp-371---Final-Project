@@ -38,7 +38,8 @@ const float CHAR_HEIGHT = 2.0f;
 // Terrian
 const int T_WIDTH = 500;
 const int T_HEIGHT = 500;
-const float T_MAX = 10.0f;
+const int T_MAX = 10.0f;	// Highest & Lowest point in terrian
+const int T_SHIFT = 2;		// Increases land to water ratio
 
 // Constant Variables
 const float PI = 3.14159265359f;
@@ -158,7 +159,7 @@ void initGl() {
    */ 
 
 
-    terrian = Terrian(T_WIDTH, T_HEIGHT, T_MAX);
+    terrian = Terrian(T_WIDTH, T_HEIGHT, T_MAX, T_SHIFT);
     vertices = terrian.generateMap();
     edges = terrian.findIndices();
 
