@@ -147,18 +147,6 @@ void initGl() {
     std::vector<GLuint> edges;
     VertexArrayObject vao = VertexArrayObject();
 
-    /*
-    // Load Heightmap
-    GlUtilities::createTerrain(terrian, terrian_width, terrian_height); 
-    terrian_width_points = terrian_width;
-    terrian_height_points = terrian_height;
-
-    // Interpolate Terrian
-    GlUtilities::interpolate(terrian, TERRIAN_SKIP, TERRIAN_STEP, terrian_width_points, terrian_height_points); 
-    edges = GlUtilities::findIndices(terrian_width_points, terrian_height_points);
-   */ 
-
-
     terrian = Terrian(T_WIDTH, T_HEIGHT, T_MAX, T_SHIFT);
     vertices = terrian.generateMap();
     edges = terrian.findIndices();

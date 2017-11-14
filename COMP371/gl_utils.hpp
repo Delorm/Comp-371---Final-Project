@@ -32,11 +32,6 @@ class GlUtilities {
     public: 
 	static GLuint loadShaders();
 	static GLFWwindow* setupGlWindow(GLuint width, GLuint height);
-	static void createTerrain(vector<glm::vec3> &, int &, int &);
-	static vector<GLuint> findIndices(int, int);
-	static void interpolate(vector<glm::vec3> &, int, float, int &, int &);
-	static void transposeList(std::list<glm::vec3> &, int &, int &);
-	static void catmullRom(std::list<glm::vec3> &, int, int, float, float);
 };
 
 #endif
