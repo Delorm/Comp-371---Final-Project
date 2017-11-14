@@ -31,9 +31,10 @@
 using namespace std;
 
 // Configurable Constant Variables
-const float CHAR_SPEED = 0.3f;
 const float MOUSE_SENSITIVITY = 0.1f;
 const float CHAR_HEIGHT = 2.0f;
+const float WALK_SPEED = 0.2f;
+const float FLY_SPEED = 3.0f;
 
 // Terrian
 const int T_WIDTH = 500;
@@ -59,6 +60,7 @@ glm::vec3 up(0.0f, 1.0f, 0.0f);
 glm::vec3 eye(0.0f, 0.0f, 5.0f);
 bool free_look = false;
 Terrian terrian;
+float mov_speed = WALK_SPEED;
 
 //std::vector<glm::vec3> terrian;
 int terrian_width;
@@ -83,7 +85,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 
 	case GLFW_KEY_W: {
 	    glm::vec3 direction = glm::normalize(center - eye);
-	    glm::vec3 step = CHAR_SPEED * direction;
+	    glm::vec3 step = mov_speed * direction;
 	    if (!free_look) {
 		step.y = 0;
 	    }
@@ -94,7 +96,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 
 	case GLFW_KEY_S: {
 	    glm::vec3 direction = glm::normalize(center - eye);
-	    glm::vec3 step = CHAR_SPEED * direction;
+	    glm::vec3 step = mov_speed * direction;
 	    eye = eye - step;
 	    if (!free_look) {
 		step.y = 0;
@@ -106,7 +108,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	case GLFW_KEY_D: {
 	    glm::vec3 forward = center - eye;
 	    glm::vec3 side = glm::normalize(glm::cross(forward, up)); 
-	    glm::vec3 step = side * CHAR_SPEED;
+	    glm::vec3 step = side * mov_speed;
 	    if (!free_look) {
 		step.y = 0;
 	    }
@@ -118,7 +120,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	case GLFW_KEY_A: {
 	    glm::vec3 forward = center - eye;
 	    glm::vec3 side = glm::normalize(glm::cross(forward, up)); 
-	    glm::vec3 step = side * CHAR_SPEED;
+	    glm::vec3 step = side * mov_speed;
 	    if (!free_look) {
 		step.y = 0;
 	    }
@@ -130,6 +132,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	case GLFW_KEY_V: {
 	    if (action == GLFW_PRESS) {
 		free_look = !free_look;
+		mov_speed = (free_look == false) ? WALK_SPEED : FLY_SPEED;
 	    }
 	    break;
 	}
