@@ -28,8 +28,6 @@ const char* VertexArrayObject::MVP_SHADER_NAME = "mvp_matrix";
 glm::mat4 VertexArrayObject::v_matrix = glm::mat4(1.0f);
 glm::mat4 VertexArrayObject::p_matrix = glm::mat4(1.0f);
 glm::mat4 VertexArrayObject::vp_matrix = glm::mat4(1.0f);
-GLuint VertexArrayObject::mvp_loc = 0;
-GLuint VertexArrayObject::shader_program = 0;
 
 // Basic Rountines
 VertexArrayObject::VertexArrayObject() {

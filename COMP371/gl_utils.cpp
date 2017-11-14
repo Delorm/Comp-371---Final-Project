@@ -35,10 +35,10 @@ using namespace std;
 
 const float MESH_MAX_HEIGHT = 50.0f;
 
-GLuint GlUtilities::loadShaders() {
+GLuint GlUtilities::loadShaders(string vertexShaderFile, string fragmentShaderFile) {
 
     // Read, Compile, and Attach Shader Programs
-    string vertex_shader_path = "vertex.shader";
+    string vertex_shader_path = vertexShaderFile;
     string VertexShaderCode;
     std::ifstream VertexShaderStream(vertex_shader_path, ios::in);
 
@@ -55,7 +55,7 @@ GLuint GlUtilities::loadShaders() {
     }
 
     // Read the Fragment Shader code from the file
-    string fragment_shader_path = "fragment.shader";
+    string fragment_shader_path = fragmentShaderFile;
     std::string FragmentShaderCode;
     std::ifstream FragmentShaderStream(fragment_shader_path, std::ios::in);
 

@@ -34,6 +34,7 @@ class Item {
 	void setGeometry(std::vector<glm::vec3>);
 	void setTopology(std::vector<unsigned int>);
 	void setModelMatrix(glm::mat4);
+	void setShaderProgram(GLuint);
 	void draw();
 	void clear();
 

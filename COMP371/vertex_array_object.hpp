@@ -34,7 +34,7 @@ class VertexArrayObject {
     private:
 	static const char* MVP_SHADER_NAME;
 	static glm::mat4 v_matrix, p_matrix, vp_matrix;
-	static GLuint mvp_loc, shader_program;
+	GLuint mvp_loc, shader_program;
 
 	glm::mat4 m_matrix;
 	GLuint vao_loc;
@@ -56,7 +56,7 @@ class VertexArrayObject {
 	// Static Routines
 	static void setViewMatrix(glm::mat4 &);
 	static void setProjectionMatrix(glm::mat4 &);
-	static void registerShaderProgram(GLuint shader_program);
+	void registerShaderProgram(GLuint shader_program);
 
 
 	// Specialized Routines

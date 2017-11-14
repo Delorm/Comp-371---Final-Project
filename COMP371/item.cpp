@@ -40,3 +40,7 @@ void Item::clear() {
     uvs.clear();
     model_matrix = glm::mat4(1);
 }
+
+void Item::setShaderProgram(GLuint shaderProgram) {
+    vao.registerShaderProgram(shaderProgram);
+}

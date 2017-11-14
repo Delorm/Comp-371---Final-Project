@@ -154,6 +154,8 @@ void initGl() {
     terrian = Terrian(T_WIDTH, T_HEIGHT, T_MAX, T_SHIFT);
     item.setGeometry(terrian.generateMap());
     item.setTopology(terrian.findIndices());
+    item.setShaderProgram(GlUtilities::loadShaders("vertex.shader", "fragment.shader"));
+
     glm::mat4 model_matrix = glm::translate(IDENTITY, glm::vec3( (float)-T_WIDTH / 2.0f, 0.0f, (float)-T_HEIGHT / 2.0f));
     item.setModelMatrix(model_matrix);
     items.push_back(item);
@@ -163,6 +165,7 @@ void initGl() {
     item.loadObject("resources/teapot.obj");
     model_matrix = glm::translate(IDENTITY, glm::vec3(0, mapHeight(0, 0), 0));
     item.setModelMatrix(model_matrix);
+    item.setShaderProgram(GlUtilities::loadShaders("vertex.shader", "fragment.shader"));
     items.push_back(item);
 }
 
@@ -189,8 +192,8 @@ int main() {
     registerCallbacks(window);
 
     // Shaders
-    GLuint shader_program = GlUtilities::loadShaders();
-    VertexArrayObject::registerShaderProgram(shader_program);
+    //GLuint shader_program = GlUtilities::loadShaders();
+    //VertexArrayObject::registerShaderProgram(shader_program);
 
     // Run Objects Initialization
     initGl();

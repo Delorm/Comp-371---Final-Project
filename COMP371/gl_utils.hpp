@@ -16,6 +16,8 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "vector"
 #include "list"
+#include "string"
+#include "cstring"
 #ifdef __linux__ 
     //linux code goes here
     #include "GL/glew.h"	// include GL Extension Wrangler
@@ -30,7 +32,7 @@ using namespace std;
 
 class GlUtilities {
     public: 
-	static GLuint loadShaders();
+	static GLuint loadShaders(string, string);
 	static GLFWwindow* setupGlWindow(GLuint width, GLuint height);
 };
 
