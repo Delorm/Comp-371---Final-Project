@@ -178,9 +178,10 @@ void initGl() {
     items.push_back(item);
 
     // Water plane
-    item.clear(1);
+    item.clear(2);
     item.loadObject("resources/plane.obj");
-    item.setShaderProgram(GlUtilities::loadShaders("resources/waterVertex.shader", "resources/waterFragment.shader"));
+    item.setTexture("resources/water.png");
+    item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
     items.push_back(item);
 
 }

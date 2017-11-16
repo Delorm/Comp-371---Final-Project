@@ -10,16 +10,17 @@
 #include "stdio.h"
 #include "iostream"
 #include "stdlib.h"
-#include "SOIL.h"
 
 #ifdef __linux__ 
     //linux code goes here
     #include "GL/glew.h"	// include GL Extension Wrangler
     #include "GLFW/glfw3.h"	// include GLFW helper library
+    #include "SOIL.h"
 #elif _WIN32
     // windows code goes here
     #include "..\glew\glew.h"	// include GL Extension Wrangler
     #include "..\glfw\glfw3.h"	// include GLFW helper library
+    #include "..\SOIL2\SOIL2.h"
 #endif
 
 using namespace std;
