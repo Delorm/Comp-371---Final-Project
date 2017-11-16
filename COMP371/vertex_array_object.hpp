@@ -34,24 +34,29 @@ class VertexArrayObject {
     private:
 	static const char* MVP_SHADER_NAME;
 	static glm::mat4 v_matrix, p_matrix, vp_matrix;
-	GLuint mvp_loc, shader_program;
+	GLuint mvp_loc, shader_program, texture;
 
 	glm::mat4 m_matrix;
 	GLuint vao_loc;
 	bool visibility;
 	int geometry_size, topology_size;
 	modes drawing_mode, primitive;
+	int num_vbos;
+	int vbos_counter;
+	GLuint* vbos_loc;
+	bool has_texture;
 
 
     public:
 	// Basic Routines
-	VertexArrayObject();
+	VertexArrayObject() {};
+	VertexArrayObject(int);
 	~VertexArrayObject();
 	void setVisibility(bool);	
 	void setModelMatrix(glm::mat4 &); 
 	void setDrawingMode(modes);
 	void setPrimitive(modes);
-	void clear(void);
+	void clear(int);
 
 	// Static Routines
 	static void setViewMatrix(glm::mat4 &);
@@ -60,8 +65,11 @@ class VertexArrayObject {
 
 
 	// Specialized Routines
-	void setGeometry(std::vector<glm::vec3> &);
-	void setTopology(std::vector<GLuint> &);
+	void setGeometry(std::vector<glm::vec3>);
+	void setTopology(std::vector<GLuint>);
+	void setUV(vector<glm::vec2>);
+	void setColors(vector<glm::vec3>);
+	void setTexture(char*);
 	void draw();
 
 };

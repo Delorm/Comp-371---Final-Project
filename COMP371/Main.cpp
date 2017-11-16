@@ -47,7 +47,7 @@ const int T_SHIFT = 2;		// Increases land to water ratio
 // Constant Variables
 const float PI = 3.14159265359f;
 const float BACKGROUND_COLOR = 0.4f; 
-const float PROJ_FAR_PLANE = 1000.0f;
+const float PROJ_FAR_PLANE = 2000.0f;
 const GLuint INITIAL_WIDTH = 1280;
 const GLuint INITIAL_HEIGHT = 720;
 const glm::mat4 IDENTITY = glm::mat4(1.0f);
@@ -64,6 +64,8 @@ glm::vec3 eye(0.0f, 0.0f, 5.0f);
 bool free_look = false;
 Terrian terrian;
 float mov_speed = WALK_SPEED;
+float teapot_ang = 0.0f;
+
 
 //std::vector<glm::vec3> terrian;
 int terrian_width;
@@ -148,25 +150,33 @@ void initGl() {
     // Set Projection Matrix 
     glm::mat4 projection_matrix = glm::perspective(45.0f, (GLfloat)INITIAL_WIDTH / (GLfloat)INITIAL_HEIGHT, 1.0f, PROJ_FAR_PLANE);
     VertexArrayObject::setProjectionMatrix(projection_matrix);
-    Item item;
+
+    glm::mat4 model_matrix = IDENTITY;
+
+
 
     // Terrian
+    Item item(1);
     terrian = Terrian(T_WIDTH, T_HEIGHT, T_MAX, T_SHIFT);
     item.setGeometry(terrian.generateMap());
     item.setTopology(terrian.findIndices());
-    item.setShaderProgram(GlUtilities::loadShaders("vertex.shader", "fragment.shader"));
 
-    glm::mat4 model_matrix = glm::translate(IDENTITY, glm::vec3( (float)-T_WIDTH / 2.0f, 0.0f, (float)-T_HEIGHT / 2.0f));
+
+    item.setShaderProgram(GlUtilities::loadShaders("resources/vertex.shader", "resources/fragment.shader"));
+
+    model_matrix = glm::translate(IDENTITY, glm::vec3( (float)-T_WIDTH / 2.0f, 0.0f, (float)-T_HEIGHT / 2.0f));
     item.setModelMatrix(model_matrix);
     items.push_back(item);
-    item.clear();
 
-    // Teapot
-    item.loadObject("resources/teapot.obj");
-    model_matrix = glm::translate(IDENTITY, glm::vec3(0, mapHeight(0, 0), 0));
+    // Cube
+    item.clear(2);
+    item.loadObject("resources/cube.obj");
+    model_matrix = glm::translate(IDENTITY, glm::vec3(0, 10, 0));
     item.setModelMatrix(model_matrix);
-    item.setShaderProgram(GlUtilities::loadShaders("vertex.shader", "fragment.shader"));
+    item.setTexture("resources/image2.png");
+    item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
     items.push_back(item);
+
 }
 
 void drawGl() {

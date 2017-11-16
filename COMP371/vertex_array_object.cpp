@@ -10,6 +10,7 @@
 #include "stdio.h"
 #include "iostream"
 #include "stdlib.h"
+#include "SOIL.h"
 
 #ifdef __linux__ 
     //linux code goes here
@@ -30,8 +31,8 @@ glm::mat4 VertexArrayObject::p_matrix = glm::mat4(1.0f);
 glm::mat4 VertexArrayObject::vp_matrix = glm::mat4(1.0f);
 
 // Basic Rountines
-VertexArrayObject::VertexArrayObject() {
-    this->clear();
+VertexArrayObject::VertexArrayObject(int num_vbos) {
+    this->clear(num_vbos);
 }
 
 
@@ -39,12 +40,17 @@ VertexArrayObject::~VertexArrayObject() {
 
 }
 
-void VertexArrayObject::clear(void) {
+void VertexArrayObject::clear(int num_vbos) {
     m_matrix = glm::mat4(1.0f);
-    glGenVertexArrays(1, &vao_loc);
     visibility = true;
     drawing_mode = ELEMENTS;
     primitive = TRIANGLES;
+    this->num_vbos = num_vbos;
+    glGenVertexArrays(1, &vao_loc);
+    vbos_loc = new GLuint [num_vbos];
+    vbos_counter = 0;
+    glGenBuffers(num_vbos, vbos_loc);
+    has_texture = false;
 }
 
 void VertexArrayObject::setVisibility(bool visibility) {
@@ -80,28 +86,27 @@ void VertexArrayObject::registerShaderProgram(GLuint new_shader_program) {
 
 
 // Specialized Routines
-void VertexArrayObject::setGeometry(std::vector<glm::vec3>& vertices) {
+void VertexArrayObject::setGeometry(std::vector<glm::vec3> vertices) {
 
     geometry_size = vertices.size();
-    GLuint vbo_loc;
-    glGenBuffers(1, &vbo_loc);
     glBindVertexArray(vao_loc);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_loc);
+    glBindBuffer(GL_ARRAY_BUFFER, vbos_loc[vbos_counter]);
     glBufferData(
 	    GL_ARRAY_BUFFER, 
 	    vertices.size() * sizeof(glm::vec3), 
 	    &vertices.front(), 
 	    GL_STATIC_DRAW
 	    );
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), 0);
-    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(vbos_counter, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), 0);
+    glEnableVertexAttribArray(vbos_counter);
+    vbos_counter++;
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 }
 
-void VertexArrayObject::setTopology(std::vector<GLuint>& edges) {
+void VertexArrayObject::setTopology(std::vector<GLuint> edges) {
 
     topology_size = edges.size();
     GLuint ebo_loc;
@@ -119,11 +124,79 @@ void VertexArrayObject::setTopology(std::vector<GLuint>& edges) {
 
 }
 
+void VertexArrayObject::setUV(std::vector<glm::vec2> uvs) {
+
+    geometry_size = uvs.size();
+    glBindVertexArray(vao_loc);
+    glBindBuffer(GL_ARRAY_BUFFER, vbos_loc[vbos_counter]);
+    glBufferData(
+	    GL_ARRAY_BUFFER, 
+	    uvs.size() * sizeof(glm::vec3), 
+	    &uvs.front(), 
+	    GL_STATIC_DRAW
+	    );
+    glVertexAttribPointer(vbos_counter, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), 0);
+    glEnableVertexAttribArray(vbos_counter);
+    vbos_counter++;
+
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    
+}
+
+void VertexArrayObject::setColors(vector<glm::vec3> colors) {
+
+    geometry_size = colors.size();
+    glBindVertexArray(vao_loc);
+    glBindBuffer(GL_ARRAY_BUFFER, vbos_loc[vbos_counter]);
+    glBufferData(
+	    GL_ARRAY_BUFFER, 
+	    colors.size() * sizeof(glm::vec3), 
+	    &colors.front(), 
+	    GL_STATIC_DRAW
+	    );
+    glVertexAttribPointer(vbos_counter, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), 0);
+    glEnableVertexAttribArray(vbos_counter);
+    vbos_counter++;
+
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+}
+
+void VertexArrayObject::setTexture(char* imageName) {
+
+    has_texture = true;
+    glGenTextures(0, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    int width, height;
+    unsigned char *image = SOIL_load_image(imageName, &width, &height, 0, SOIL_LOAD_RGBA);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    SOIL_free_image_data(image);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 void VertexArrayObject::draw() {
     if (!visibility) return;
 
+    // Use Shader
+    glUseProgram(shader_program);
+
     glm::mat4 mvp_matrix = vp_matrix * m_matrix;
     glUniformMatrix4fv(mvp_loc, 1, GL_FALSE, glm::value_ptr(mvp_matrix));
+
+    // Bind Texture
+    if (has_texture) {
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glUniform1i(glGetUniformLocation(shader_program, "ourTexture1"), 0); 
+    }
 
     int renderring_mode = (primitive == POINTS) ? GL_POINTS : GL_TRIANGLES;
     glBindVertexArray(vao_loc);
