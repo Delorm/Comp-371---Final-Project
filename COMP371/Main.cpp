@@ -94,8 +94,8 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	    glm::vec3 step = mov_speed * direction;
 	    if (!free_look) {
 		step.y = 0;
+		if (!validMove(step)) return;
 	    }
-	    if (!validMove(step)) return;
 	    eye = eye + step;
 	    center = center + step;
 	    break;
@@ -106,8 +106,8 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	    glm::vec3 step = mov_speed * direction;
 	    if (!free_look) {
 		step.y = 0;
+		if (!validMove(step)) return;
 	    }
-	    if (!validMove(step)) return;
 	    eye = eye - step;
 	    center = center - step;
 	    break;
@@ -119,8 +119,8 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	    glm::vec3 step = side * mov_speed;
 	    if (!free_look) {
 		step.y = 0;
+		if (!validMove(step)) return;
 	    }
-	    if (!validMove(step)) return;
 	    eye = eye + step;
 	    center = center + step;
 	    break;
@@ -132,8 +132,8 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	    glm::vec3 step = side * mov_speed;
 	    if (!free_look) {
 		step.y = 0;
+		if (!validMove(step)) return;
 	    }
-	    if (!validMove(step)) return;
 	    eye = eye - step;
 	    center = center - step;
 	    break;
