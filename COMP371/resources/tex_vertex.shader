@@ -5,15 +5,10 @@ layout(location = 1) in vec2 texCoord;
 
 uniform mat4 mvp_matrix;
 
-out vec2 TexCoord;
+out vec2 tex_coord;
 
 void main()
 {
 	gl_Position = mvp_matrix * vec4(position, 1.0);
-    //gl_Position = projection * view * model * vec4(position.x, position.y, position.z, 1.0f);
-	//gl_Position = vec4(position, 1.0f);
-
-	//gl_PositionStatic = vec4(position, 1.0);
-
-	TexCoord = vec2(texCoord.x, 1.0 - texCoord.y);
+	tex_coord = vec2(texCoord.x, 1.0 - texCoord.y);
 }

@@ -27,6 +27,8 @@ using namespace std;
 
 // Static Initilization
 const char* VertexArrayObject::MVP_SHADER_NAME = "mvp_matrix";
+const char* VertexArrayObject::M_SHADER_NAME   = "m_matrix";
+
 glm::mat4 VertexArrayObject::v_matrix = glm::mat4(1.0f);
 glm::mat4 VertexArrayObject::p_matrix = glm::mat4(1.0f);
 glm::mat4 VertexArrayObject::vp_matrix = glm::mat4(1.0f);
@@ -84,6 +86,7 @@ void VertexArrayObject::setModelMatrix(glm::mat4 & new_model_matrix) {
 void VertexArrayObject::registerShaderProgram(GLuint new_shader_program) {
     shader_program = new_shader_program;
     mvp_loc = glGetUniformLocation(new_shader_program, MVP_SHADER_NAME);
+    m_loc = glGetUniformLocation(new_shader_program, M_SHADER_NAME);
 }
 
 
@@ -193,6 +196,7 @@ void VertexArrayObject::draw() {
 
     glm::mat4 mvp_matrix = vp_matrix * m_matrix;
     glUniformMatrix4fv(mvp_loc, 1, GL_FALSE, glm::value_ptr(mvp_matrix));
+    glUniformMatrix4fv(m_loc, 1, GL_FALSE, glm::value_ptr(m_matrix));
 
     // Bind Texture
     if (has_texture) {

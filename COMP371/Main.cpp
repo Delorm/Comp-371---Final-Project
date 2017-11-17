@@ -39,8 +39,8 @@ const float WALK_SPEED = 0.2f;
 const float FLY_SPEED = 2.0f;
 
 // Terrian
-const int T_WIDTH = 500;
-const int T_HEIGHT = 500;
+const int T_WIDTH = 512;
+const int T_HEIGHT = 512;
 const int T_MAX = 10.0f;	// Highest & Lowest point in terrian
 const int T_SHIFT = 2;		// Increases land to water ratio
 
@@ -155,12 +155,13 @@ void initGl() {
 
 
 
-    // Terrian
+    // Terrain
     Item item(1);
     terrian = Terrian(T_WIDTH, T_HEIGHT, T_MAX, T_SHIFT);
     item.setGeometry(terrian.generateMap());
     item.setTopology(terrian.findIndices());
-    item.setShaderProgram(GlUtilities::loadShaders("resources/vertex.shader", "resources/fragment.shader"));
+    item.setTexture("resources/grass.png");
+    item.setShaderProgram(GlUtilities::loadShaders("resources/terrain_vertex.shader", "resources/terrain_fragment.shader"));
     model_matrix = glm::translate(IDENTITY, glm::vec3( (float)-T_WIDTH / 2.0f, 0.0f, (float)-T_HEIGHT / 2.0f));
     item.setModelMatrix(model_matrix);
     items.push_back(item);
@@ -183,14 +184,16 @@ void initGl() {
     item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
     items.push_back(item);
 
+    
     // Water plane
-    item.clear(2);
+    item.clear(1);
     item.loadObject("resources/water.obj");
-    item.setTexture("resources/water.png");
-    model_matrix = glm::scale(IDENTITY, glm::vec3(2 * T_WIDTH, 0, 2 * T_HEIGHT));
+    model_matrix = glm::scale(IDENTITY, glm::vec3(T_WIDTH, 0, T_HEIGHT));
     item.setModelMatrix(model_matrix);
-    item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
+    item.setTexture("resources/water.png");
+    item.setShaderProgram(GlUtilities::loadShaders("resources/terrain_vertex.shader", "resources/terrain_fragment.shader"));
     items.push_back(item);
+    
 
 }
 
