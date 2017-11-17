@@ -173,14 +173,16 @@ void initGl() {
     item.loadObject("resources/cube.obj");
     model_matrix = glm::translate(IDENTITY, glm::vec3(0, 10, 0));
     item.setModelMatrix(model_matrix);
-    item.setTexture("resources/image2.png");
+    item.setTexture("resources/grass.png");
     item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
     items.push_back(item);
 
     // Water plane
     item.clear(2);
-    item.loadObject("resources/plane.obj");
+    item.loadObject("resources/water.obj");
     item.setTexture("resources/water.png");
+    model_matrix = glm::scale(IDENTITY, glm::vec3(2 * T_WIDTH, 0, 2 * T_HEIGHT));
+    item.setModelMatrix(model_matrix);
     item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
     items.push_back(item);
 

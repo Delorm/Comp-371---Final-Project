@@ -52,6 +52,7 @@ void VertexArrayObject::clear(int num_vbos) {
     vbos_counter = 0;
     glGenBuffers(num_vbos, vbos_loc);
     has_texture = false;
+    texture = 0;
 }
 
 void VertexArrayObject::setVisibility(bool visibility) {
