@@ -189,6 +189,14 @@ void initGl() {
     item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
     items.push_back(item);
 
+    // Rock
+    item.clear(2);
+    item.loadObject("resources/capsule.obj");
+    model_matrix = glm::translate(IDENTITY, glm::vec3(6, 8, 0));
+    item.setModelMatrix(model_matrix);
+    item.setTexture("resources/rocky.jpg");
+    item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
+    items.push_back(item);
     
     // Water plane
     item.clear(1);
