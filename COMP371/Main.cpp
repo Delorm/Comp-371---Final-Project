@@ -80,6 +80,7 @@ void windowSizeCallback(GLFWwindow*, int, int);
 float mapHeight(float, float); 
 glm::mat4 setCameraPosition(void);
 std::vector<GLuint> findIndices(int width, int height); 
+bool validMove(glm::vec3 step);
 
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode) {
@@ -94,6 +95,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	    if (!free_look) {
 		step.y = 0;
 	    }
+	    if (!validMove(step)) return;
 	    eye = eye + step;
 	    center = center + step;
 	    break;
@@ -102,10 +104,11 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	case GLFW_KEY_S: {
 	    glm::vec3 direction = glm::normalize(center - eye);
 	    glm::vec3 step = mov_speed * direction;
-	    eye = eye - step;
 	    if (!free_look) {
 		step.y = 0;
 	    }
+	    if (!validMove(step)) return;
+	    eye = eye - step;
 	    center = center - step;
 	    break;
 	}
@@ -117,6 +120,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	    if (!free_look) {
 		step.y = 0;
 	    }
+	    if (!validMove(step)) return;
 	    eye = eye + step;
 	    center = center + step;
 	    break;
@@ -129,6 +133,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	    if (!free_look) {
 		step.y = 0;
 	    }
+	    if (!validMove(step)) return;
 	    eye = eye - step;
 	    center = center - step;
 	    break;
@@ -307,4 +312,13 @@ float mapHeight(float x, float z) {
     float char_z = z + T_HEIGHT / 2.0f;
     return terrian.getHeight(char_x, char_z);     
 
+}
+
+bool validMove(glm::vec3 step) {
+    glm::vec3 char_pos = eye - glm::vec3(0, CHAR_HEIGHT, 0);
+    glm::vec3 next_pos = char_pos + step;
+    if (mapHeight(next_pos.x, next_pos.z) >= 0) {
+	return true;
+    }
+    return false;
 }
