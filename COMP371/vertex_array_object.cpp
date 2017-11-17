@@ -52,7 +52,7 @@ void VertexArrayObject::clear(int num_vbos) {
     vbos_counter = 0;
     glGenBuffers(num_vbos, vbos_loc);
     has_texture = false;
-    texture = 0;
+    texture_loc = 0;
 }
 
 void VertexArrayObject::setVisibility(bool visibility) {
@@ -169,8 +169,8 @@ void VertexArrayObject::setColors(vector<glm::vec3> colors) {
 void VertexArrayObject::setTexture(char* imageName) {
 
     has_texture = true;
-    glGenTextures(0, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    glGenTextures(1, &texture_loc);
+    glBindTexture(GL_TEXTURE_2D, texture_loc);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -182,6 +182,7 @@ void VertexArrayObject::setTexture(char* imageName) {
     glGenerateMipmap(GL_TEXTURE_2D);
     SOIL_free_image_data(image);
     glBindTexture(GL_TEXTURE_2D, 0);
+    glUniform1i(glGetUniformLocation(shader_program, "ourTexture1"), 0); 
 }
 
 void VertexArrayObject::draw() {
@@ -196,8 +197,7 @@ void VertexArrayObject::draw() {
     // Bind Texture
     if (has_texture) {
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glUniform1i(glGetUniformLocation(shader_program, "ourTexture1"), 0); 
+	glBindTexture(GL_TEXTURE_2D, texture_loc);
     }
 
     int renderring_mode = (primitive == POINTS) ? GL_POINTS : GL_TRIANGLES;
@@ -207,6 +207,7 @@ void VertexArrayObject::draw() {
     } else {
 	glDrawElements(renderring_mode, topology_size, GL_UNSIGNED_INT, nullptr);
     }
+    glBindTexture(GL_TEXTURE_2D, 0);
     glBindVertexArray(0);
 }
 

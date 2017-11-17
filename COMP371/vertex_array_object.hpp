@@ -34,7 +34,7 @@ class VertexArrayObject {
     private:
 	static const char* MVP_SHADER_NAME;
 	static glm::mat4 v_matrix, p_matrix, vp_matrix;
-	GLuint mvp_loc, shader_program, texture;
+	GLuint mvp_loc, shader_program, texture_loc;
 
 	glm::mat4 m_matrix;
 	GLuint vao_loc;

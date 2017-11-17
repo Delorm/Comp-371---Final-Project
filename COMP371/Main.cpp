@@ -160,20 +160,26 @@ void initGl() {
     terrian = Terrian(T_WIDTH, T_HEIGHT, T_MAX, T_SHIFT);
     item.setGeometry(terrian.generateMap());
     item.setTopology(terrian.findIndices());
-
-
     item.setShaderProgram(GlUtilities::loadShaders("resources/vertex.shader", "resources/fragment.shader"));
-
     model_matrix = glm::translate(IDENTITY, glm::vec3( (float)-T_WIDTH / 2.0f, 0.0f, (float)-T_HEIGHT / 2.0f));
     item.setModelMatrix(model_matrix);
     items.push_back(item);
 
-    // Cube
+    // Cube #1
     item.clear(2);
     item.loadObject("resources/cube.obj");
     model_matrix = glm::translate(IDENTITY, glm::vec3(0, 10, 0));
     item.setModelMatrix(model_matrix);
     item.setTexture("resources/grass.png");
+    item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
+    items.push_back(item);
+
+    // Cube #2
+    item.clear(2);
+    item.loadObject("resources/cube.obj");
+    model_matrix = glm::translate(IDENTITY, glm::vec3(10, 10, 0));
+    item.setModelMatrix(model_matrix);
+    item.setTexture("resources/image2.png");
     item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
     items.push_back(item);
 
