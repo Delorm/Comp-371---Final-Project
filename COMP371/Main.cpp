@@ -222,6 +222,35 @@ void initGl() {
     }
 
     
+	// Fern
+	item.clear(2);
+	item.loadObject("resources/fern.obj");
+	model_matrix = glm::translate(IDENTITY, glm::vec3(32, 4, 0));
+	item.setModelMatrix(model_matrix);
+	item.setTexture("resources/fern.png");
+	item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
+	items.push_back(item);
+
+	// Tree
+	item.clear(2);
+	item.loadObject("resources/tree.obj");
+	model_matrix = glm::translate(IDENTITY, glm::vec3(16, 4, 0));
+	item.setModelMatrix(model_matrix);
+	item.setTexture("resources/tree.png");
+	item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
+	items.push_back(item);
+
+	// Grass
+	glm::mat4 trans;
+	trans = glm::rotate(trans, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	item.clear(2);
+	item.loadObject("resources/grassModel.obj");
+	model_matrix = glm::translate(IDENTITY, glm::vec3(2, 2, 0));
+	item.setModelMatrix(model_matrix*trans);
+	item.setTexture("resources/grassTexture.png");
+	item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
+	items.push_back(item);
+	
     // Water plane
     item.clear(1);
     item.loadObject("resources/water.obj");
