@@ -10,7 +10,7 @@ void Item::loadObject(char* path) {
 
     vao.setGeometry(vertices);
     vao.setDrawingMode(VertexArrayObject::VERTICES);
-    vao.setUV(uvs);
+    vao.setUVs(uvs);
 }
 
 void Item::setGeometry(std::vector<glm::vec3> vertices) {
@@ -22,6 +22,10 @@ void Item::setTopology(std::vector<unsigned int> edges) {
     this->edges = edges;
     vao.setTopology(edges);
     vao.setDrawingMode(VertexArrayObject::ELEMENTS);
+}
+
+void Item::setUVs(std::vector<glm::vec2> uvs) {
+    vao.setUVs(uvs);
 }
 
 void Item::setColors(std::vector<glm::vec3> colors) {
@@ -47,6 +51,15 @@ void Item::draw() {
 
 void Item::clear(int num_vbos) {
     vao.clear(num_vbos);
+    vertices.clear();
+    edges.clear();
+    normals.clear();
+    uvs.clear();
+    model_matrix = glm::mat4(1);
+}
+
+void Item::recycle(int num_vbos) {
+    vao.recycle(num_vbos);
     vertices.clear();
     edges.clear();
     normals.clear();

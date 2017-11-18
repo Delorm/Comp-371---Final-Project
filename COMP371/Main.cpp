@@ -19,6 +19,7 @@
 #include "terrian.hpp"
 #include "objloader.hpp"
 #include "item.hpp"
+#include "time.h"
 
 #ifdef __linux__ 
     //linux code goes here
@@ -34,19 +35,25 @@ using namespace std;
 
 // Configurable Constant Variables
 const float MOUSE_SENSITIVITY = 0.1f;
-const float CHAR_HEIGHT = 2.0f;
-const float WALK_SPEED = 0.2f;
-const float FLY_SPEED = 2.0f;
+const float CHAR_HEIGHT = 1.0f;
+const float WALK_SPEED = 0.1f;
+const float FLY_SPEED = 1.0f;
 
 // Terrian
-const int T_WIDTH = 512;
-const int T_HEIGHT = 512;
+const int T_WIDTH = 256;
+const int T_HEIGHT = 256;
 const int T_MAX = 10.0f;	// Highest & Lowest point in terrian
 const int T_SHIFT = 2;		// Increases land to water ratio
+
+// Rocks
+const int R_NUMBER = 500;
+const int R_MAX_RADIUS = 3;
+const int R_POINTS = 20;
 
 // Constant Variables
 const float PI = 3.14159265359f;
 const float BACKGROUND_COLOR = 0.4f; 
+const float PROJ_NEAR_PLANE = 0.1f;
 const float PROJ_FAR_PLANE = 2000.0f;
 const GLuint INITIAL_WIDTH = 1280;
 const GLuint INITIAL_HEIGHT = 720;
@@ -62,6 +69,7 @@ glm::vec3 center(0.0f, 0.0f, 0.0f);
 glm::vec3 up(0.0f, 1.0f, 0.0f);
 glm::vec3 eye(0.0f, 0.0f, 5.0f);
 bool free_look = false;
+bool wireframe = false; 
 Terrian terrian;
 float mov_speed = WALK_SPEED;
 float teapot_ang = 0.0f;
@@ -80,7 +88,8 @@ void windowSizeCallback(GLFWwindow*, int, int);
 float mapHeight(float, float); 
 glm::mat4 setCameraPosition(void);
 std::vector<GLuint> findIndices(int width, int height); 
-bool validMove(glm::vec3 step);
+bool validMove(glm::vec3);
+void move(glm::vec3);
 
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode) {
@@ -91,25 +100,15 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 
 	case GLFW_KEY_W: {
 	    glm::vec3 direction = glm::normalize(center - eye);
-	    glm::vec3 step = mov_speed * direction;
-	    if (!free_look) {
-		step.y = 0;
-		if (!validMove(step)) return;
-	    }
-	    eye = eye + step;
-	    center = center + step;
+	    glm::vec3 step = direction * mov_speed;
+	    move(step);
 	    break;
 	}
 
 	case GLFW_KEY_S: {
 	    glm::vec3 direction = glm::normalize(center - eye);
-	    glm::vec3 step = mov_speed * direction;
-	    if (!free_look) {
-		step.y = 0;
-		if (!validMove(step)) return;
-	    }
-	    eye = eye - step;
-	    center = center - step;
+	    glm::vec3 step = -direction * mov_speed;
+	    move(step);
 	    break;
 	}
 
@@ -117,25 +116,15 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	    glm::vec3 forward = center - eye;
 	    glm::vec3 side = glm::normalize(glm::cross(forward, up)); 
 	    glm::vec3 step = side * mov_speed;
-	    if (!free_look) {
-		step.y = 0;
-		if (!validMove(step)) return;
-	    }
-	    eye = eye + step;
-	    center = center + step;
+	    move(step);
 	    break;
 	}
 
 	case GLFW_KEY_A: {
 	    glm::vec3 forward = center - eye;
 	    glm::vec3 side = glm::normalize(glm::cross(forward, up)); 
-	    glm::vec3 step = side * mov_speed;
-	    if (!free_look) {
-		step.y = 0;
-		if (!validMove(step)) return;
-	    }
-	    eye = eye - step;
-	    center = center - step;
+	    glm::vec3 step = -side * mov_speed;
+	    move(step);
 	    break;
 	}
 
@@ -146,6 +135,21 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	    }
 	    break;
 	}
+
+	case GLFW_KEY_T: {
+	    if (action == GLFW_PRESS) {
+		wireframe = !wireframe;
+		if (wireframe) {
+		    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		} else {
+		    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
+	    }
+	    break;
+	}
+
+
+
     }
 }
 
@@ -153,12 +157,9 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 void initGl() {
 
     // Set Projection Matrix 
-    glm::mat4 projection_matrix = glm::perspective(45.0f, (GLfloat)INITIAL_WIDTH / (GLfloat)INITIAL_HEIGHT, 1.0f, PROJ_FAR_PLANE);
+    glm::mat4 projection_matrix = glm::perspective(45.0f, (GLfloat)INITIAL_WIDTH / (GLfloat)INITIAL_HEIGHT, PROJ_NEAR_PLANE, PROJ_FAR_PLANE);
     VertexArrayObject::setProjectionMatrix(projection_matrix);
-
     glm::mat4 model_matrix = IDENTITY;
-
-
 
     // Terrain
     Item item(1);
@@ -197,6 +198,29 @@ void initGl() {
     item.setTexture("resources/rocky.jpg");
     item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
     items.push_back(item);
+
+
+    // Trees
+    int num_of_trees = 100;
+
+    item.clear(2);
+    item.loadObject("resources/tree.obj");
+    item.setTexture("resources/trunc.jpg");
+    item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
+
+    for (int i = 0; i < num_of_trees; i++) {
+
+	int x_loc = (rand() % T_WIDTH) - T_WIDTH / 2.0f;
+	int z_loc = (rand() % T_HEIGHT) - T_HEIGHT / 2.0f;
+	float y_loc = mapHeight(x_loc, z_loc);
+	if (y_loc < 0) continue;
+	float rad = rand() / RAND_MAX * 2 * PI;
+	model_matrix = glm::rotate(IDENTITY, rad, up);
+	model_matrix = glm::translate(model_matrix, glm::vec3(x_loc, y_loc, z_loc));
+	item.setModelMatrix(model_matrix);
+	items.push_back(item);
+    }
+
     
     // Water plane
     item.clear(1);
@@ -207,6 +231,36 @@ void initGl() {
     item.setShaderProgram(GlUtilities::loadShaders("resources/terrain_vertex.shader", "resources/terrain_fragment.shader"));
     items.push_back(item);
     
+
+
+    // Random Rock
+    srand(time(NULL));
+    item.clear(2);
+    item.setTexture("resources/rocky.jpg");
+    item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
+
+    for (int i = 0; i < R_NUMBER; i++) {
+
+	int x_loc = (rand() % T_WIDTH) - T_WIDTH / 2.0f;
+	int z_loc = (rand() % T_HEIGHT) - T_HEIGHT / 2.0f;
+	float y_loc = mapHeight(x_loc, z_loc);
+	if (y_loc < 0) continue;
+
+	std::vector<glm::vec3> vertices = GlUtilities::genRandomRock(R_MAX_RADIUS, R_POINTS);
+	std::vector<unsigned int> indices;
+	GlUtilities::convexHull(vertices, indices);
+	std::vector<glm::vec2> uvs = GlUtilities::genSphericalUVs(vertices);
+
+	item.recycle(2);
+	item.setGeometry(vertices);
+	item.setTopology(indices);
+	item.setUVs(uvs);
+
+	model_matrix = glm::translate(IDENTITY, glm::vec3(x_loc, y_loc, z_loc));
+	item.setModelMatrix(model_matrix);
+	items.push_back(item);
+
+    }
 
 }
 
@@ -311,7 +365,7 @@ void windowSizeCallback(GLFWwindow* window, int width, int height) {
     // Define the new Viewport Dimensions{
     glfwGetFramebufferSize(window, & width, &height);
     glViewport(0, 0, width, height);
-    glm::mat4 projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 1.0f, PROJ_FAR_PLANE);
+    glm::mat4 projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, PROJ_NEAR_PLANE, PROJ_FAR_PLANE);
     VertexArrayObject::setProjectionMatrix(projection_matrix);
 }
 
@@ -323,10 +377,22 @@ float mapHeight(float x, float z) {
 }
 
 bool validMove(glm::vec3 step) {
+
+    if (free_look) return true;
+
+    // Water Collistion
     glm::vec3 char_pos = eye - glm::vec3(0, CHAR_HEIGHT, 0);
     glm::vec3 next_pos = char_pos + step;
-    if (mapHeight(next_pos.x, next_pos.z) >= 0) {
-	return true;
+    if (mapHeight(next_pos.x, next_pos.z) <= 0) {
+	return false;
     }
-    return false;
+
+    return true;
+}
+
+void move(glm::vec3 step) {
+    if (validMove(step)) {
+	center = center + step;
+	eye = eye + step;
+    }
 }

@@ -29,7 +29,7 @@ using namespace std;
 class VertexArrayObject {
 
     public:
-	enum modes {VERTICES, ELEMENTS, TRIANGLES, POINTS};
+	enum modes {VERTICES, ELEMENTS, TRIANGLES, POINTS, LINES};
 
     private:
 	static const char* MVP_SHADER_NAME;
@@ -58,6 +58,7 @@ class VertexArrayObject {
 	void setDrawingMode(modes);
 	void setPrimitive(modes);
 	void clear(int);
+	void recycle(int);
 
 	// Static Routines
 	static void setViewMatrix(glm::mat4 &);
@@ -68,7 +69,7 @@ class VertexArrayObject {
 	// Specialized Routines
 	void setGeometry(std::vector<glm::vec3>);
 	void setTopology(std::vector<GLuint>);
-	void setUV(vector<glm::vec2>);
+	void setUVs(vector<glm::vec2>);
 	void setColors(vector<glm::vec3>);
 	void setTexture(char*);
 	void draw();

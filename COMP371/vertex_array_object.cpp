@@ -57,6 +57,18 @@ void VertexArrayObject::clear(int num_vbos) {
     texture_loc = 0;
 }
 
+void VertexArrayObject::recycle(int num_vbos) {
+    m_matrix = glm::mat4(1.0f);
+    visibility = true;
+    drawing_mode = ELEMENTS;
+    primitive = TRIANGLES;
+    this->num_vbos = num_vbos;
+    glGenVertexArrays(1, &vao_loc);
+    vbos_loc = new GLuint [num_vbos];
+    vbos_counter = 0;
+    glGenBuffers(num_vbos, vbos_loc);
+}
+
 void VertexArrayObject::setVisibility(bool visibility) {
     this->visibility = visibility;
 }
@@ -129,7 +141,7 @@ void VertexArrayObject::setTopology(std::vector<GLuint> edges) {
 
 }
 
-void VertexArrayObject::setUV(std::vector<glm::vec2> uvs) {
+void VertexArrayObject::setUVs(std::vector<glm::vec2> uvs) {
 
     geometry_size = uvs.size();
     glBindVertexArray(vao_loc);

@@ -12,7 +12,7 @@
 
 class Item {
 
-    private:
+    public:
 	// Gemoetry & Topology
 	std::vector<glm::vec3> vertices;
 	std::vector<unsigned int> edges;
@@ -35,11 +35,13 @@ class Item {
 	void setGeometry(std::vector<glm::vec3>);
 	void setTopology(std::vector<unsigned int>);
 	void setColors(std::vector<glm::vec3>);
+	void setUVs(std::vector<glm::vec2>);
 	void setTexture(char*);
 	void setModelMatrix(glm::mat4 &);
 	void setShaderProgram(GLuint);
 	void draw();
 	void clear(int);
+	void recycle(int);
 
 
 	// Getters

@@ -21,16 +21,19 @@
 #include "vector"
 #include "list"
 #ifdef __linux__ 
-//linux code goes here
-#include "GL/glew.h"	// include GL Extension Wrangler
-#include "GLFW/glfw3.h"	// include GLFW helper library
+    //linux code goes here
+    #include "GL/glew.h"	// include GL Extension Wrangler
+    #include "GLFW/glfw3.h"	// include GLFW helper library
+    #include "../quickhull/QuickHull.hpp"
 #elif _WIN32
-// windows code goes here
-#include "..\glew\glew.h"	// include GL Extension Wrangler
-#include "..\glfw\glfw3.h"	// include GLFW helper library
+    // windows code goes here
+    #include "..\glew\glew.h"	// include GL Extension Wrangler
+    #include "..\glfw\glfw3.h"	// include GLFW helper library
+    #include "..\quickhull\QuickHull.hpp"
 #endif
 
 using namespace std;
+using namespace quickhull;
 
 
 const float MESH_MAX_HEIGHT = 50.0f;
@@ -155,3 +158,65 @@ GLFWwindow* GlUtilities::setupGlWindow(GLuint global_width, GLuint global_height
 
     return window;
 }
+
+
+void GlUtilities::convexHull(std::vector<glm::vec3> & vertices, std::vector<unsigned int> & indices) {
+
+    QuickHull<float> quickHull;
+    std::vector<Vector3<float>> pointCloud;
+
+    // Add vertices
+    for (int i = 0; i < vertices.size(); i++) {
+	glm::vec3 ver = vertices[i];
+	Vector3<float> point(ver.x, ver.y, ver.z);
+	pointCloud.push_back(point);
+    }
+
+    auto hull = quickHull.getConvexHull(pointCloud, true, false);
+    auto indexBuffer = hull.getIndexBuffer();
+    auto vertexBuffer = hull.getVertexBuffer();
+
+
+    // Convert to glm
+    vertices.clear();
+
+    for (int i = 0; i < vertexBuffer.size(); i++) {
+	Vector3<float> vec = vertexBuffer[i];
+	glm::vec3 point = glm::vec3(vec.x, vec.y, vec.z);
+	vertices.push_back(point);
+    }
+
+    for (int i = 0; i < indexBuffer.size(); i++) {
+	indices.push_back(indexBuffer[i]);
+    }
+}
+
+
+std::vector<glm::vec3> GlUtilities::genRandomRock(float max_r, int points) {
+
+    std::vector<glm::vec3> vertices;
+    max_r = sqrt(max_r);
+    float r = (float)rand() / RAND_MAX * max_r;
+    for (int i = 0; i < points; i++) {
+	float px = (((float)rand() / RAND_MAX) * 2.0f * r) - (r);
+	float py = (((float)rand() / RAND_MAX) * 2.0f * r) - (r);
+	float pz = (((float)rand() / RAND_MAX) * 2.0f * r) - (r);
+	vertices.push_back(glm::vec3(px, py, pz));
+    }
+    return vertices;
+}
+
+const float PI = 3.14159265359f;
+std::vector<glm::vec2> GlUtilities::genSphericalUVs(std::vector<glm::vec3> & vertices) {
+
+    std::vector<glm::vec2> uvs;
+    for (int i = 0; i < vertices.size(); i++) {
+	glm::vec3 point = vertices[i];
+	glm::vec3 normal = glm::normalize(point);
+	float tu = atan2(normal.x, normal.z) / (2.0f*PI) + 0.5f;
+	float tv = normal.y * 0.5f + 0.5f;
+	uvs.push_back(glm::vec2(tu, tv));
+    }
+    return uvs;
+}
+

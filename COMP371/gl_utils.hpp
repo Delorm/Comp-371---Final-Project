@@ -34,6 +34,9 @@ class GlUtilities {
     public: 
 	static GLuint loadShaders(string, string);
 	static GLFWwindow* setupGlWindow(GLuint width, GLuint height);
+	static void convexHull(std::vector<glm::vec3> &, std::vector<unsigned int> &);
+	static std::vector<glm::vec3> genRandomRock(float, int);
+	static std::vector<glm::vec2> genSphericalUVs(std::vector<glm::vec3> &);
 };
 
 #endif
