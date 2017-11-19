@@ -246,7 +246,7 @@ void initGl() {
 	item.clear(2);
 	item.loadObject("resources/grassModel.obj");
 	model_matrix = glm::translate(IDENTITY, glm::vec3(2, 2, 0));
-	item.setModelMatrix(model_matrix*trans);
+	item.setModelMatrix(model_matrix);
 	item.setTexture("resources/grassTexture.png");
 	item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
 	items.push_back(item);
@@ -291,6 +291,16 @@ void initGl() {
 
     }
 
+    // Skybox
+    item.clear(2);
+    item.loadObject("resources/skybox.obj");
+    float scalar = T_WIDTH + T_HEIGHT;
+    model_matrix = glm::scale(IDENTITY, glm::vec3(scalar, scalar, scalar));
+    item.setModelMatrix(model_matrix);
+    item.setTexture("resources/skybox.png");
+    item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
+    items.push_back(item);
+
 }
 
 void drawGl() {
@@ -314,10 +324,6 @@ int main() {
 
     // Register Callbacks
     registerCallbacks(window);
-
-    // Shaders
-    //GLuint shader_program = GlUtilities::loadShaders();
-    //VertexArrayObject::registerShaderProgram(shader_program);
 
     // Run Objects Initialization
     initGl();
