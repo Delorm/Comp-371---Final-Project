@@ -32,8 +32,16 @@ void Item::setColors(std::vector<glm::vec3> colors) {
     vao.setColors(colors);
 }
 
-void Item::setTexture(char* textureName) {
-    vao.setTexture(textureName);
+void Item::setTexture(char* texture_name) {
+    vao.setTexture(texture_name, "ourTexture1", GL_LINEAR);
+}
+
+void Item::setTexture(char* texture_name, char* sampler_name, int interpolation_mode) {
+    vao.setTexture(texture_name, sampler_name, interpolation_mode);
+}
+
+void Item::setNumOfTexture(int num) {
+    vao.setNumOfTexture(num);
 }
 
 void Item::setModelMatrix(glm::mat4 & model_matrix) {

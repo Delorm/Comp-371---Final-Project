@@ -35,7 +35,12 @@ class VertexArrayObject {
 	static const char* MVP_SHADER_NAME;
 	static const char* M_SHADER_NAME;
 	static glm::mat4 v_matrix, p_matrix, vp_matrix;
-	GLuint mvp_loc, shader_program, texture_loc, m_loc;
+	GLuint mvp_loc, shader_program, m_loc;
+	int num_of_textures;
+	int texture_binding_point[5]; 
+	GLuint* textures_loc;
+	char** textures_sampler_names;
+	int texture_index;
 
 	glm::mat4 m_matrix;
 	GLuint vao_loc;
@@ -71,7 +76,8 @@ class VertexArrayObject {
 	void setTopology(std::vector<GLuint>);
 	void setUVs(vector<glm::vec2>);
 	void setColors(vector<glm::vec3>);
-	void setTexture(char*);
+	void setTexture(char*, char*, int);
+	void setNumOfTexture(int);
 	void draw();
 
 };

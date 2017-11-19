@@ -132,3 +132,13 @@ void Terrian::preCalculateMaps() {
 	}
     }
 }
+
+std::vector<glm::vec2> Terrian::generateUVs() {
+
+    std::vector<glm::vec2> uvs;
+    std::vector<glm::vec3> map = generateMap();
+    for (int i = 0; i < map.size(); i++) {
+	uvs.push_back(glm::vec2(map[i].x / width, map[i].z / height));
+    }
+    return uvs;
+}

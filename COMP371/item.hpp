@@ -37,6 +37,8 @@ class Item {
 	void setColors(std::vector<glm::vec3>);
 	void setUVs(std::vector<glm::vec2>);
 	void setTexture(char*);
+	void setTexture(char*, char*, int);
+	void setNumOfTexture(int);
 	void setModelMatrix(glm::mat4 &);
 	void setShaderProgram(GLuint);
 	void draw();

@@ -162,15 +162,29 @@ void initGl() {
     glm::mat4 model_matrix = IDENTITY;
 
     // Terrain
-    Item item(1);
+    Item item(2);
+    
+    
     terrian = Terrian(T_WIDTH, T_HEIGHT, T_MAX, T_SHIFT);
     item.setGeometry(terrian.generateMap());
     item.setTopology(terrian.findIndices());
-    item.setTexture("resources/grass.png");
+    item.setUVs(terrian.generateUVs());
+
+    // Texture
+    
+    item.setNumOfTexture(5);
     item.setShaderProgram(GlUtilities::loadShaders("resources/terrain_vertex.shader", "resources/terrain_fragment.shader"));
+    item.setTexture("resources/terrain_background.png", "background", GL_LINEAR);
+    item.setTexture("resources/terrain_r.png", "r_texture", GL_LINEAR);
+    item.setTexture("resources/terrain_g.png", "g_texture", GL_LINEAR);
+    item.setTexture("resources/terrain_b.png", "b_texture", GL_LINEAR);
+    item.setTexture("resources/blend_map.png", "blend_map", GL_LINEAR);
+
     model_matrix = glm::translate(IDENTITY, glm::vec3( (float)-T_WIDTH / 2.0f, 0.0f, (float)-T_HEIGHT / 2.0f));
     item.setModelMatrix(model_matrix);
     items.push_back(item);
+    
+    
 
     // Cube #1
     item.clear(2);
@@ -257,10 +271,8 @@ void initGl() {
     model_matrix = glm::scale(IDENTITY, glm::vec3(T_WIDTH, 0, T_HEIGHT));
     item.setModelMatrix(model_matrix);
     item.setTexture("resources/water.png");
-    item.setShaderProgram(GlUtilities::loadShaders("resources/terrain_vertex.shader", "resources/terrain_fragment.shader"));
+    item.setShaderProgram(GlUtilities::loadShaders("resources/water_vertex.shader", "resources/water_fragment.shader"));
     items.push_back(item);
-    
-
 
     // Random Rock
     srand(time(NULL));
@@ -297,7 +309,7 @@ void initGl() {
     float scalar = T_WIDTH + T_HEIGHT;
     model_matrix = glm::scale(IDENTITY, glm::vec3(scalar, scalar, scalar));
     item.setModelMatrix(model_matrix);
-    item.setTexture("resources/skybox.png");
+    item.setTexture("resources/skybox.png", "outTexture1", GL_NEAREST);
     item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
     items.push_back(item);
 

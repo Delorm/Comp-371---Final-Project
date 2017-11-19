@@ -35,6 +35,11 @@ glm::mat4 VertexArrayObject::vp_matrix = glm::mat4(1.0f);
 
 // Basic Rountines
 VertexArrayObject::VertexArrayObject(int num_vbos) {
+    texture_binding_point[0] = GL_TEXTURE0;
+    texture_binding_point[1] = GL_TEXTURE1;
+    texture_binding_point[2] = GL_TEXTURE2;
+    texture_binding_point[3] = GL_TEXTURE3;
+    texture_binding_point[4] = GL_TEXTURE4;
     this->clear(num_vbos);
 }
 
@@ -54,7 +59,9 @@ void VertexArrayObject::clear(int num_vbos) {
     vbos_counter = 0;
     glGenBuffers(num_vbos, vbos_loc);
     has_texture = false;
-    texture_loc = 0;
+    textures_loc = 0;
+    texture_index = 0;
+    num_of_textures = 0;
 }
 
 void VertexArrayObject::recycle(int num_vbos) {
@@ -181,15 +188,23 @@ void VertexArrayObject::setColors(vector<glm::vec3> colors) {
 
 }
 
-void VertexArrayObject::setTexture(char* imageName) {
+void VertexArrayObject::setTexture(char* imageName, char* sampler_name, int interpolation_mode) {
 
     has_texture = true;
-    glGenTextures(1, &texture_loc);
-    glBindTexture(GL_TEXTURE_2D, texture_loc);
+    if (num_of_textures == 0) {
+	setNumOfTexture(1);
+    }
+    
+    glActiveTexture(GL_TEXTURE0 + texture_index);
+    glEnable(GL_TEXTURE_2D);
+    GLuint uni_loc = glGetUniformLocation(shader_program, sampler_name);
+    glUniform1i(uni_loc, texture_index); 
+
+    glBindTexture(GL_TEXTURE_2D, textures_loc[texture_index]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, interpolation_mode);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, interpolation_mode);
 
     int width, height;
     unsigned char *image = SOIL_load_image(imageName, &width, &height, 0, SOIL_LOAD_RGBA);
@@ -197,7 +212,17 @@ void VertexArrayObject::setTexture(char* imageName) {
     glGenerateMipmap(GL_TEXTURE_2D);
     SOIL_free_image_data(image);
     glBindTexture(GL_TEXTURE_2D, 0);
-    glUniform1i(glGetUniformLocation(shader_program, "ourTexture1"), 0); 
+    
+    textures_sampler_names[texture_index] = sampler_name;
+    texture_index++;
+
+}
+
+void VertexArrayObject::setNumOfTexture(int num_of_textures) {
+    this->num_of_textures = num_of_textures;
+    textures_loc = new GLuint [num_of_textures];
+    textures_sampler_names = new char* [num_of_textures];
+    glGenTextures(num_of_textures, textures_loc);
 }
 
 void VertexArrayObject::draw() {
@@ -211,10 +236,11 @@ void VertexArrayObject::draw() {
     glUniformMatrix4fv(m_loc, 1, GL_FALSE, glm::value_ptr(m_matrix));
 
     // Bind Texture
-    if (has_texture) {
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture_loc);
+    for (int i = 0; i < num_of_textures; i++) {
+	glActiveTexture(GL_TEXTURE0 + i);
+	glBindTexture(GL_TEXTURE_2D, textures_loc[i]);
     }
+    
 
     int renderring_mode = (primitive == POINTS) ? GL_POINTS : GL_TRIANGLES;
     glBindVertexArray(vao_loc);
@@ -223,7 +249,11 @@ void VertexArrayObject::draw() {
     } else {
 	glDrawElements(renderring_mode, topology_size, GL_UNSIGNED_INT, nullptr);
     }
-    glBindTexture(GL_TEXTURE_2D, 0);
+
+    for (int i = 0; i < num_of_textures; i++) {
+	glActiveTexture(GL_TEXTURE0 + i);
+	glBindTexture(GL_TEXTURE_2D, 0);
+    }
     glBindVertexArray(0);
 }
 

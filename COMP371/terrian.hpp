@@ -28,8 +28,8 @@ class Terrian {
 	int max;
 	int shift;
 	int seed;
-	int X_MULT = 49632;
-	int Z_MULT = 325176;
+	int X_MULT = 10000;
+	int Z_MULT = 100000;
 	float pi = 3.14159265359f;
 	float** noise_map;
 	float** smooth_noise_map;
@@ -46,6 +46,7 @@ class Terrian {
 	float interpolate(float, float, float);
 	float getInterpolatedNoise(float, float);
 	vector<GLuint> findIndices();
+	std::vector<glm::vec2> generateUVs();
 	void preCalculateMaps();
 };
 
