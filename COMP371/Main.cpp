@@ -309,7 +309,7 @@ void initGl() {
     float scalar = T_WIDTH + T_HEIGHT;
     model_matrix = glm::scale(IDENTITY, glm::vec3(scalar, scalar, scalar));
     item.setModelMatrix(model_matrix);
-    item.setTexture("resources/skybox.png", "outTexture1", GL_NEAREST);
+    item.setTexture("resources/skybox.png", "ourTexture1", GL_NEAREST);
     item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
     items.push_back(item);
 
