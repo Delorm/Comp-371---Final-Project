@@ -20,6 +20,7 @@
 #include "objloader.hpp"
 #include "item.hpp"
 #include "time.h"
+#include "set"
 
 #ifdef __linux__ 
     //linux code goes here
@@ -73,6 +74,7 @@ bool wireframe = false;
 Terrian terrian;
 float mov_speed = WALK_SPEED;
 float teapot_ang = 0.0f;
+set<int> key_set;
 
 
 //std::vector<glm::vec3> terrian;
@@ -90,9 +92,23 @@ glm::mat4 setCameraPosition(void);
 std::vector<GLuint> findIndices(int width, int height); 
 bool validMove(glm::vec3);
 void move(glm::vec3);
+void processInput();
 
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode) {
+
+    if (action == GLFW_PRESS) {
+	key_set.insert(key);	
+    } else if (action == GLFW_RELEASE) {
+	key_set.erase(key);
+    }
+}
+
+void processInput() {
+
+    for (set<int>::iterator it = key_set.begin(); it != key_set.end(); it++) {
+
+    int key = *it;
     switch (key) {
 	case GLFW_KEY_ESCAPE:
 	    close_window = true;
@@ -129,27 +145,23 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 	}
 
 	case GLFW_KEY_V: {
-	    if (action == GLFW_PRESS) {
-		free_look = !free_look;
-		mov_speed = (free_look == false) ? WALK_SPEED : FLY_SPEED;
-	    }
+	    key_set.erase(key);
+	    free_look = !free_look;
+	    mov_speed = (free_look == false) ? WALK_SPEED : FLY_SPEED;
 	    break;
 	}
 
 	case GLFW_KEY_T: {
-	    if (action == GLFW_PRESS) {
-		wireframe = !wireframe;
-		if (wireframe) {
-		    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		} else {
-		    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		}
+	    key_set.erase(key);
+	    wireframe = !wireframe;
+	    if (wireframe) {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	    } else {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	    }
 	    break;
 	}
-
-
-
+    }
     }
 }
 
@@ -344,6 +356,7 @@ int main() {
     while (!glfwWindowShouldClose(window) && !close_window)
     {
 	glfwPollEvents();
+	processInput();
 	glClearColor(BACKGROUND_COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
