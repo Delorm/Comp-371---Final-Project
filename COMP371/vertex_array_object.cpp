@@ -155,7 +155,7 @@ void VertexArrayObject::setUVs(std::vector<glm::vec2> uvs) {
     glBindBuffer(GL_ARRAY_BUFFER, vbos_loc[vbos_counter]);
     glBufferData(
 	    GL_ARRAY_BUFFER, 
-	    uvs.size() * sizeof(glm::vec3), 
+	    uvs.size() * sizeof(glm::vec2), 
 	    &uvs.front(), 
 	    GL_STATIC_DRAW
 	    );
