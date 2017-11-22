@@ -49,6 +49,10 @@ void Item::setModelMatrix(glm::mat4 & model_matrix) {
     vao.setModelMatrix(model_matrix);
 }
 
+glm::mat4 Item::getModelMatrix() {
+    return model_matrix;
+}
+
 void Item::setShaderProgram(GLuint shaderProgram) {
     vao.registerShaderProgram(shaderProgram);
 }

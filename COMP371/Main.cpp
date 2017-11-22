@@ -75,6 +75,8 @@ Terrian terrian;
 float mov_speed = WALK_SPEED;
 float teapot_ang = 0.0f;
 set<int> key_set;
+int skybox_index;
+float skybox_theta = 0.0f;
 
 
 //std::vector<glm::vec3> terrian;
@@ -316,18 +318,25 @@ void initGl() {
     }
 
     // Skybox
+    skybox_index = items.size();
     item.clear(2);
     item.loadObject("resources/skybox.obj");
-    float scalar = T_WIDTH + T_HEIGHT;
-    model_matrix = glm::scale(IDENTITY, glm::vec3(scalar, scalar, scalar));
-    item.setModelMatrix(model_matrix);
-    item.setTexture("resources/skybox.png", "ourTexture1", GL_NEAREST);
     item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
+    item.setTexture("resources/skybox.png", "ourTexture1", GL_NEAREST);
     items.push_back(item);
 
 }
 
 void drawGl() {
+
+    // Skybox Model Matrix
+    float scalar = T_WIDTH + T_HEIGHT;
+    skybox_theta += 0.0002f;
+    glm::mat4 model_matrix = IDENTITY;
+    model_matrix = translate(model_matrix, eye);
+    model_matrix = glm::scale(model_matrix, glm::vec3(scalar));
+    model_matrix = glm::rotate(model_matrix, skybox_theta, up);
+    items[skybox_index].setModelMatrix(model_matrix);
 
     // One View Matrix per Iteration
     glm::mat4 view_matrix = setCameraPosition();
