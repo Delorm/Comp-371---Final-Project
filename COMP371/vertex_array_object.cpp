@@ -49,14 +49,10 @@ VertexArrayObject::~VertexArrayObject() {
 }
 
 void VertexArrayObject::clear(int num_vbos) {
-    m_matrix = glm::mat4(1.0f);
-    visibility = true;
-    drawing_mode = ELEMENTS;
-    primitive = TRIANGLES;
-    this->num_vbos = num_vbos;
-    glGenVertexArrays(1, &vao_loc);
-    vbos_loc = new GLuint [num_vbos];
-    vbos_counter = 0;
+
+    recycle(num_vbos);
+
+    // Clear Texture
     glGenBuffers(num_vbos, vbos_loc);
     has_texture = false;
     textures_loc = 0;

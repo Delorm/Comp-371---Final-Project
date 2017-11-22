@@ -65,7 +65,6 @@ const glm::vec3 ORIGIN = glm::vec3(0.0f);
 GLFWwindow* window;
 bool close_window = false;
 std::vector<Item> items;
-//std::vector<VertexArrayObject> vaos;
 glm::vec3 center(0.0f, 0.0f, 0.0f);
 glm::vec3 up(0.0f, 1.0f, 0.0f);
 glm::vec3 eye(0.0f, 0.0f, 5.0f);
@@ -110,60 +109,60 @@ void processInput() {
 
     for (set<int>::iterator it = key_set.begin(); it != key_set.end(); it++) {
 
-    int key = *it;
-    switch (key) {
-	case GLFW_KEY_ESCAPE:
-	    close_window = true;
-	    break;
+	int key = *it;
+	switch (key) {
+	    case GLFW_KEY_ESCAPE:
+		close_window = true;
+		break;
 
-	case GLFW_KEY_W: {
-	    glm::vec3 direction = glm::normalize(center - eye);
-	    glm::vec3 step = direction * mov_speed;
-	    move(step);
-	    break;
-	}
-
-	case GLFW_KEY_S: {
-	    glm::vec3 direction = glm::normalize(center - eye);
-	    glm::vec3 step = -direction * mov_speed;
-	    move(step);
-	    break;
-	}
-
-	case GLFW_KEY_D: {
-	    glm::vec3 forward = center - eye;
-	    glm::vec3 side = glm::normalize(glm::cross(forward, up)); 
-	    glm::vec3 step = side * mov_speed;
-	    move(step);
-	    break;
-	}
-
-	case GLFW_KEY_A: {
-	    glm::vec3 forward = center - eye;
-	    glm::vec3 side = glm::normalize(glm::cross(forward, up)); 
-	    glm::vec3 step = -side * mov_speed;
-	    move(step);
-	    break;
-	}
-
-	case GLFW_KEY_V: {
-	    key_set.erase(key);
-	    free_look = !free_look;
-	    mov_speed = (free_look == false) ? WALK_SPEED : FLY_SPEED;
-	    break;
-	}
-
-	case GLFW_KEY_T: {
-	    key_set.erase(key);
-	    wireframe = !wireframe;
-	    if (wireframe) {
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	    } else {
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	    case GLFW_KEY_W: {
+		glm::vec3 direction = glm::normalize(center - eye);
+		glm::vec3 step = direction * mov_speed;
+		move(step);
+		break;
 	    }
-	    break;
+
+	    case GLFW_KEY_S: {
+		glm::vec3 direction = glm::normalize(center - eye);
+		glm::vec3 step = -direction * mov_speed;
+		move(step);
+		break;
+	    }
+
+	    case GLFW_KEY_D: {
+		glm::vec3 forward = center - eye;
+		glm::vec3 side = glm::normalize(glm::cross(forward, up)); 
+		glm::vec3 step = side * mov_speed;
+		move(step);
+		break;
+	    }
+
+	    case GLFW_KEY_A: {
+		glm::vec3 forward = center - eye;
+		glm::vec3 side = glm::normalize(glm::cross(forward, up)); 
+		glm::vec3 step = -side * mov_speed;
+		move(step);
+		break;
+	    }
+
+	    case GLFW_KEY_V: {
+		key_set.erase(key);
+		free_look = !free_look;
+		mov_speed = (free_look == false) ? WALK_SPEED : FLY_SPEED;
+		break;
+	    }
+
+	    case GLFW_KEY_T: {
+		key_set.erase(key);
+		wireframe = !wireframe;
+		if (wireframe) {
+		    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		} else {
+		    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
+		break;
+	    }
 	}
-    }
     }
 }
 
@@ -177,8 +176,6 @@ void initGl() {
 
     // Terrain
     Item item(2);
-    
-    
     terrian = Terrian(T_WIDTH, T_HEIGHT, T_MAX, T_SHIFT);
     item.setGeometry(terrian.generateMap());
     item.setTopology(terrian.findIndices());
@@ -205,8 +202,8 @@ void initGl() {
     item.loadObject("resources/cube.obj");
     model_matrix = glm::translate(IDENTITY, glm::vec3(0, 10, 0));
     item.setModelMatrix(model_matrix);
-    item.setTexture("resources/grass.png");
     item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
+    item.setTexture("resources/grass.png");
     items.push_back(item);
 
     // Cube #2
@@ -214,8 +211,8 @@ void initGl() {
     item.loadObject("resources/cube.obj");
     model_matrix = glm::translate(IDENTITY, glm::vec3(10, 10, 0));
     item.setModelMatrix(model_matrix);
-    item.setTexture("resources/image2.png");
     item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
+    item.setTexture("resources/image2.png");
     items.push_back(item);
 
     // Rock
@@ -223,8 +220,8 @@ void initGl() {
     item.loadObject("resources/capsule.obj");
     model_matrix = glm::translate(IDENTITY, glm::vec3(6, 8, 0));
     item.setModelMatrix(model_matrix);
-    item.setTexture("resources/rocky.jpg");
     item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
+    item.setTexture("resources/rocky.jpg");
     items.push_back(item);
 
 
@@ -233,9 +230,8 @@ void initGl() {
 
     item.clear(2);
     item.loadObject("resources/tree.obj");
-    item.setTexture("resources/trunc.jpg");
     item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
-
+    item.setTexture("resources/trunc.jpg");
     for (int i = 0; i < num_of_trees; i++) {
 
 	int x_loc = (rand() % T_WIDTH) - T_WIDTH / 2.0f;
@@ -249,51 +245,50 @@ void initGl() {
 	items.push_back(item);
     }
 
-    
-	// Fern
-	item.clear(2);
-	item.loadObject("resources/fern.obj");
-	model_matrix = glm::translate(IDENTITY, glm::vec3(32, 4, 0));
-	item.setModelMatrix(model_matrix);
-	item.setTexture("resources/fern.png");
-	item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
-	items.push_back(item);
 
-	// Tree
-	item.clear(2);
-	item.loadObject("resources/tree.obj");
-	model_matrix = glm::translate(IDENTITY, glm::vec3(16, 4, 0));
-	item.setModelMatrix(model_matrix);
-	item.setTexture("resources/tree.png");
-	item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
-	items.push_back(item);
+    // Fern
+    item.clear(2);
+    item.loadObject("resources/fern.obj");
+    model_matrix = glm::translate(IDENTITY, glm::vec3(32, 4, 0));
+    item.setModelMatrix(model_matrix);
+    item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
+    item.setTexture("resources/fern.png");
+    items.push_back(item);
 
-	// Grass
-	glm::mat4 trans;
-	trans = glm::rotate(trans, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	item.clear(2);
-	item.loadObject("resources/grassModel.obj");
-	model_matrix = glm::translate(IDENTITY, glm::vec3(2, 2, 0));
-	item.setModelMatrix(model_matrix);
-	item.setTexture("resources/grassTexture.png");
-	item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
-	items.push_back(item);
-	
+    // Tree
+    item.clear(2);
+    item.loadObject("resources/tree.obj");
+    model_matrix = glm::translate(IDENTITY, glm::vec3(16, 4, 0));
+    item.setModelMatrix(model_matrix);
+    item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
+    item.setTexture("resources/tree.png");
+    items.push_back(item);
+
+    // Grass
+    glm::mat4 trans;
+    trans = glm::rotate(trans, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    item.clear(2);
+    item.loadObject("resources/grassModel.obj");
+    model_matrix = glm::translate(IDENTITY, glm::vec3(2, 2, 0));
+    item.setModelMatrix(model_matrix);
+    item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
+    item.setTexture("resources/grassTexture.png");
+    items.push_back(item);
+
     // Water plane
     item.clear(1);
     item.loadObject("resources/water.obj");
     model_matrix = glm::scale(IDENTITY, glm::vec3(T_WIDTH, 0, T_HEIGHT));
     item.setModelMatrix(model_matrix);
-    item.setTexture("resources/water.png");
     item.setShaderProgram(GlUtilities::loadShaders("resources/water_vertex.shader", "resources/water_fragment.shader"));
+    item.setTexture("resources/water.png");
     items.push_back(item);
 
     // Random Rock
     srand(time(NULL));
     item.clear(2);
-    item.setTexture("resources/rocky.jpg");
     item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
-
+    item.setTexture("resources/rocky.jpg");
     for (int i = 0; i < R_NUMBER; i++) {
 
 	int x_loc = (rand() % T_WIDTH) - T_WIDTH / 2.0f;
@@ -431,6 +426,7 @@ void registerCallbacks(GLFWwindow* window) {
 }
 
 void windowSizeCallback(GLFWwindow* window, int width, int height) {
+
     // Define the new Viewport Dimensions{
     glfwGetFramebufferSize(window, & width, &height);
     glViewport(0, 0, width, height);
@@ -439,6 +435,7 @@ void windowSizeCallback(GLFWwindow* window, int width, int height) {
 }
 
 float mapHeight(float x, float z) {
+
     float char_x = x + T_WIDTH / 2.0f;
     float char_z = z + T_HEIGHT / 2.0f;
     return terrian.getHeight(char_x, char_z);     

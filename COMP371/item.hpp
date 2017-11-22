@@ -40,7 +40,6 @@ class Item {
 	void setTexture(char*, char*, int);
 	void setNumOfTexture(int);
 	void setModelMatrix(glm::mat4 &);
-	glm::mat4 getModelMatrix();
 	void setShaderProgram(GLuint);
 	void draw();
 	void clear(int);

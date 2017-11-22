@@ -49,25 +49,12 @@ void Item::setModelMatrix(glm::mat4 & model_matrix) {
     vao.setModelMatrix(model_matrix);
 }
 
-glm::mat4 Item::getModelMatrix() {
-    return model_matrix;
-}
-
 void Item::setShaderProgram(GLuint shaderProgram) {
     vao.registerShaderProgram(shaderProgram);
 }
 
 void Item::draw() {
     vao.draw();
-}
-
-void Item::clear(int num_vbos) {
-    vao.clear(num_vbos);
-    vertices.clear();
-    edges.clear();
-    normals.clear();
-    uvs.clear();
-    model_matrix = glm::mat4(1);
 }
 
 void Item::recycle(int num_vbos) {
@@ -77,6 +64,11 @@ void Item::recycle(int num_vbos) {
     normals.clear();
     uvs.clear();
     model_matrix = glm::mat4(1);
+}
+
+void Item::clear(int num_vbos) {
+    recycle(num_vbos);
+    vao.clear(num_vbos);
 }
 
 std::vector<glm::vec3> & Item::getVertices() {
