@@ -37,8 +37,8 @@ using namespace std;
 // Configurable Constant Variables
 const float MOUSE_SENSITIVITY = 0.1f;
 const float CHAR_HEIGHT = 1.0f;
-const float WALK_SPEED = 0.1f;
-const float FLY_SPEED = 1.0f;
+const float WALK_SPEED = 5.0f;
+const float FLY_SPEED = 50.0f;
 
 // Terrian
 const int T_WIDTH = 256;
@@ -76,6 +76,11 @@ float teapot_ang = 0.0f;
 set<int> key_set;
 int skybox_index;
 float skybox_theta = 0.0f;
+timeval last_time;		// Timekeeping variables
+timeval current_time;
+float delta_time = 0.0f;
+float one_sec_counter = 0.0f;
+int frames_counter = 0;
 
 
 //std::vector<glm::vec3> terrian;
@@ -93,7 +98,9 @@ glm::mat4 setCameraPosition(void);
 std::vector<GLuint> findIndices(int width, int height); 
 bool validMove(glm::vec3);
 void move(glm::vec3);
-void processInput();
+void processInput(void);
+void getTimeNow(timeval &);
+void calcDeltaTime(void);
 
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode) {
@@ -117,31 +124,27 @@ void processInput() {
 
 	    case GLFW_KEY_W: {
 		glm::vec3 direction = glm::normalize(center - eye);
-		glm::vec3 step = direction * mov_speed;
-		move(step);
+		move(direction);
 		break;
 	    }
 
 	    case GLFW_KEY_S: {
 		glm::vec3 direction = glm::normalize(center - eye);
-		glm::vec3 step = -direction * mov_speed;
-		move(step);
+		move(-direction);
 		break;
 	    }
 
 	    case GLFW_KEY_D: {
 		glm::vec3 forward = center - eye;
 		glm::vec3 side = glm::normalize(glm::cross(forward, up)); 
-		glm::vec3 step = side * mov_speed;
-		move(step);
+		move(side);
 		break;
 	    }
 
 	    case GLFW_KEY_A: {
 		glm::vec3 forward = center - eye;
 		glm::vec3 side = glm::normalize(glm::cross(forward, up)); 
-		glm::vec3 step = -side * mov_speed;
-		move(step);
+		move(-side);
 		break;
 	    }
 
@@ -322,11 +325,12 @@ void initGl() {
 
 }
 
+
 void drawGl() {
 
     // Skybox Model Matrix
     float scalar = T_WIDTH + T_HEIGHT;
-    skybox_theta += 0.0002f;
+    skybox_theta += PI / 240.0f * delta_time;
     glm::mat4 model_matrix = IDENTITY;
     model_matrix = translate(model_matrix, eye);
     model_matrix = glm::scale(model_matrix, glm::vec3(scalar));
@@ -343,7 +347,6 @@ void drawGl() {
     }
 }
 
-
 int main() {
 
     // Initialize Window
@@ -355,10 +358,13 @@ int main() {
 
     // Run Objects Initialization
     initGl();
+    getTimeNow(last_time);
 
     // Main OpenGL Loop 
     while (!glfwWindowShouldClose(window) && !close_window)
     {
+	calcDeltaTime();
+
 	glfwPollEvents();
 	processInput();
 	glClearColor(BACKGROUND_COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR, 1.0f);
@@ -456,9 +462,43 @@ bool validMove(glm::vec3 step) {
     return true;
 }
 
-void move(glm::vec3 step) {
+void move(glm::vec3 direction) {
+
+    glm::vec3 step = mov_speed * delta_time * direction;
     if (validMove(step)) {
 	center = center + step;
 	eye = eye + step;
     }
+}
+
+void getTimeNow(timeval & time) {
+
+#ifdef __linux__ 
+
+    gettimeofday(&time, NULL);
+
+#elif _WIN32
+
+    clock_t time_now = clock();
+    time.tv_sec = time_now / CLOCKS_PER_SEC * 2; 
+    time.tv_usec = time_now % CLOCKS_PER_SEC * 2;
+
+#endif
+}
+
+void calcDeltaTime() {
+
+    timeval current_time;
+    getTimeNow(current_time);
+    delta_time = (current_time.tv_sec - last_time.tv_sec) + (current_time.tv_usec - last_time.tv_usec) * 0.000001f;
+    last_time = current_time;
+
+    one_sec_counter += delta_time;
+    frames_counter++;
+    if (one_sec_counter >= 1) {
+	cout << frames_counter << endl;
+	one_sec_counter = 0.0f;
+	frames_counter = 0;
+    } 
+
 }
