@@ -82,6 +82,7 @@ float delta_time = 0.0f;
 float one_sec_counter = 0.0f;
 int frames_counter = 0;
 float light_angle = 45.0f;
+bool light_mov = true;
 
 
 //std::vector<glm::vec3> terrian;
@@ -167,14 +168,29 @@ void processInput() {
 	    }
 
 	    case GLFW_KEY_P: {
-		light_angle += 30 * delta_time;
+		key_set.erase(key);
+		light_mov = !light_mov;
 		break;
 	    }
 
-	    case GLFW_KEY_O: {
-		light_angle -= 30 * delta_time;
+	    case GLFW_KEY_1: {
+		light_mov = false;
+		light_angle = 90.0f;
 		break;
 	    }
+
+	    case GLFW_KEY_2: {
+		light_mov = false;
+		light_angle = 110.0f;
+		break;
+	    }
+			     
+	    case GLFW_KEY_3: {
+		light_mov = false;
+		light_angle = 270.0f;
+		break;
+	    }
+
 	}
     }
 }
@@ -289,8 +305,7 @@ void initGl() {
     item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
     item.setTexture("resources/grassTexture.png");
     items.push_back(item);
-
-
+    
     
     // Water plane
     item.clear(1);
@@ -300,7 +315,7 @@ void initGl() {
     item.setShaderProgram(GlUtilities::loadShaders("resources/water_vertex.shader", "resources/water_fragment.shader"));
     item.setTexture("resources/water.png");
     items.push_back(item);
-    
+
 
     // Random Rocks
     srand(time(NULL));
@@ -361,6 +376,9 @@ void drawGl() {
 
 
     // Light Direction
+    if (light_mov) {
+	light_angle += 30 * delta_time; 
+    }
     glm::vec4 light_direction = glm::vec4(-1.0f, 0.0f, 0.0f, 0.0f);
     float light_angle_rad = (light_angle * PI / 180.0f);
     glm::mat4 light_rotation = glm::rotate(IDENTITY, light_angle_rad, glm::vec3(0, 0, 1));
