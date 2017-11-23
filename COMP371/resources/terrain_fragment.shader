@@ -12,9 +12,11 @@ uniform sampler2D r_texture;
 uniform sampler2D g_texture;
 uniform sampler2D b_texture;
 uniform sampler2D blend_map;
+uniform sampler2D nor_map;
 
 void main()
 {
+    vec3 normal = normalize(texture(nor_map, tex_coord).xyz);
     vec4 blend_color = texture(blend_map, tex_coord); 
     vec2 tiled_coord = tex_coord * 50.0;
 
@@ -32,15 +34,15 @@ void main()
     color_strength += ka;
 
     // Diffuse
-    float diffuse_strength = max(dot(-light_dir, pix_normal), 0);
-    float kd = 0.5f;
+    float diffuse_strength = max(dot(-light_dir, normal), 0);
+    float kd = 0.4f;
     color_strength +=  (kd * diffuse_strength);
 
     // Specular
 
-    float a = 70.0;
+    float a = 20.0;
     float ks = 0.3;
-    vec3 reflection_vector = reflect(-light_dir, pix_normal);
+    vec3 reflection_vector = reflect(-light_dir, normal);
     float prod = max(dot(view_vector, reflection_vector) , 0);
     float specular_strength = pow(prod, a);  
     color_strength += (ks * specular_strength);

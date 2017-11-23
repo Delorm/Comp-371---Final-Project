@@ -196,7 +196,7 @@ void initGl() {
     item.setNormals(terrian.generateNormals());
 
     // Texture
-    item.setNumOfTexture(8);
+    item.setNumOfTexture(7);
     item.setShaderProgram(GlUtilities::loadShaders("resources/terrain_vertex.shader", "resources/terrain_fragment.shader"));
     item.setTexture("resources/grass.png", "grass", GL_LINEAR);
     item.setTexture("resources/terrain_background.png", "background", GL_LINEAR);
@@ -205,7 +205,6 @@ void initGl() {
     item.setTexture("resources/terrain_b.png", "b_texture", GL_LINEAR);
     item.setTexture("resources/blend_map.png", "blend_map", GL_LINEAR);
     item.setTexture("resources/normal_map.png", "normal_map", GL_LINEAR);
-    item.setTexture("resources/displacement_map.png", "dis_map", GL_LINEAR);
 
     model_matrix = glm::translate(IDENTITY, glm::vec3( (float)-T_WIDTH / 2.0f, 0.0f, (float)-T_HEIGHT / 2.0f));
     item.setModelMatrix(model_matrix);
@@ -236,9 +235,9 @@ void initGl() {
     item.loadObject("resources/capsule.obj");
     model_matrix = glm::translate(IDENTITY, glm::vec3(6, 8, 0));
     item.setModelMatrix(model_matrix);
-    item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
+    item.setShaderProgram(GlUtilities::loadShaders("resources/rock_vertex.shader", "resources/rock_fragment.shader"));
+    item.setNumOfTexture(1);
     item.setTexture("resources/rocky.jpg");
-    items.push_back(item);
 
 
     // Trees
@@ -305,9 +304,12 @@ void initGl() {
 
     // Random Rocks
     srand(time(NULL));
-    item.clear(3);
+    item.clear(2);
     item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
+    item.setNumOfTexture(3);
     item.setTexture("resources/rocky.jpg");
+    item.setTexture("resources/rock_nor.png", "nor_map", GL_LINEAR);
+    items.push_back(item);
     for (int i = 0; i < R_NUMBER; i++) {
 
 	int x_loc = (rand() % T_WIDTH) - T_WIDTH / 2.0f;
