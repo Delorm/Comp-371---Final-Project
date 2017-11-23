@@ -41,13 +41,13 @@ const float WALK_SPEED = 5.0f;
 const float FLY_SPEED = 50.0f;
 
 // Terrian
-const int T_WIDTH = 256;
-const int T_HEIGHT = 256;
+const int T_WIDTH = 128;
+const int T_HEIGHT = 128;
 const int T_MAX = 10.0f;	// Highest & Lowest point in terrian
 const int T_SHIFT = 2;		// Increases land to water ratio
 
 // Rocks
-const int R_NUMBER = 500;
+const int R_NUMBER = 250;
 const int R_MAX_RADIUS = 3;
 const int R_POINTS = 20;
 
@@ -241,7 +241,7 @@ void initGl() {
 
 
     // Trees
-    int num_of_trees = 100;
+    int num_of_trees = 10;
 
     item.clear(2);
     item.loadObject("resources/tree.obj");
@@ -290,6 +290,8 @@ void initGl() {
     item.setTexture("resources/grassTexture.png");
     items.push_back(item);
 
+
+    
     // Water plane
     item.clear(1);
     item.loadObject("resources/water.obj");
@@ -298,6 +300,7 @@ void initGl() {
     item.setShaderProgram(GlUtilities::loadShaders("resources/water_vertex.shader", "resources/water_fragment.shader"));
     item.setTexture("resources/water.png");
     items.push_back(item);
+    
 
     // Random Rocks
     srand(time(NULL));
@@ -347,6 +350,13 @@ void initGl() {
 
 void drawGl() {
 
+    // One View Matrix per Iteration
+    glm::mat4 view_matrix = setCameraPosition();
+    VertexArrayObject::setViewMatrix(view_matrix);
+    glm::vec4 eye4d = glm::vec4(eye.x, eye.y, eye.z, 1.0f);
+    Item::setEyeLocation(eye4d);
+
+
     // Light Direction
     glm::vec4 light_direction = glm::vec4(-1.0f, 0.0f, 0.0f, 0.0f);
     float light_angle_rad = (light_angle * PI / 180.0f);
@@ -363,11 +373,6 @@ void drawGl() {
     model_matrix = glm::rotate(model_matrix, skybox_theta, up);
     items[skybox_index].setModelMatrix(model_matrix);
 
-    // One View Matrix per Iteration
-    glm::mat4 view_matrix = setCameraPosition();
-    VertexArrayObject::setViewMatrix(view_matrix);
-    glm::vec4 eye4d = glm::vec4(eye.x, eye.y, eye.z, 1.0f);
-    Item::setEyeLocation(eye4d);
 
     // Draw All Objects
     for (unsigned int i = 0; i < items.size(); i++) {

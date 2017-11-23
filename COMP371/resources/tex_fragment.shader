@@ -11,30 +11,30 @@ uniform sampler2D ourTexture1;
 
 void main()
 {
-	vec4 myTex = texture(ourTexture1, tex_coord);
-	if (myTex.a < 0.5) discard;
+    vec4 myTex = texture(ourTexture1, tex_coord);
+    if (myTex.a < 0.5) discard;
 
-	vec4 object_color = myTex;
+    vec4 object_color = myTex;
 
-	float color_strength = 0.0f;
+    float color_strength = 0.0f;
 
-	    // Ambience
-	    float ka = 0.2;
-	    color_strength += ka;
+    // Ambience
+    float ka = 0.1;
+    color_strength += ka;
 
-	    // Diffuse
-	    float strength = max(dot(-light_dir, pix_normal), 0);
-	    float kd = 0.4f;
-	    color_strength +=  kd * strength;
+    // Diffuse
+    float strength = max(dot(-light_dir, pix_normal), 0);
+    float kd = 0.6f;
+    color_strength +=  kd * strength;
 
-	    // Specular
-	    float a = 10;
-	    float ks = 0.2;
-	    vec3 reflection_vector = reflect(-light_dir, pix_normal);
-	    strength = max(pow(dot(view_vector, reflection_vector), a), 0);  
-	    color_strength += ks * strength;
+    // Specular
+    float a = 10;
+    float ks = 0.2;
+    vec3 reflection_vector = reflect(-light_dir, pix_normal);
+    float prod = max(dot(view_vector, reflection_vector) , 0);
+    strength = pow(prod, a);
+    color_strength += ks * strength;
 
-	    color = color_strength * object_color;
-	    clamp(color, 0, 1);
+    color = color_strength * object_color;
 
 }

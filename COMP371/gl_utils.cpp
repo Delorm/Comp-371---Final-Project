@@ -140,6 +140,10 @@ GLFWwindow* GlUtilities::setupGlWindow(GLuint global_width, GLuint global_height
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
+    // Enable Backface Culling
+    glEnable(GL_CULL_FACE);
+    glFrontFace(GL_BACK);
+
     // Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
     glewExperimental = GL_TRUE;
     // Initialize GLEW to setup the OpenGL Function pointers
@@ -172,7 +176,7 @@ void GlUtilities::convexHull(std::vector<glm::vec3> & vertices, std::vector<unsi
 	pointCloud.push_back(point);
     }
 
-    auto hull = quickHull.getConvexHull(pointCloud, true, false);
+    auto hull = quickHull.getConvexHull(pointCloud, false, false);
     auto indexBuffer = hull.getIndexBuffer();
     auto vertexBuffer = hull.getVertexBuffer();
 
