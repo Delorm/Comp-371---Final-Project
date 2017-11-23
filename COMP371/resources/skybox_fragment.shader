@@ -11,10 +11,11 @@ uniform vec4 light_direction;
 
 void main()
 {
-	vec4 day_col = texture(day, tex_coord);
-	vec4 night_col = texture(night, tex_coord);
+	vec3 day_col = texture(day, tex_coord).xyz;
+	vec3 night_col = texture(night, tex_coord).xyz;
+	vec3 light = light_direction.xyz;
 	
 	// Blending Factor
-	float f = (dot(light_direction, vec4(0, 1, 0, 0)) + 1) / 2.0f;
-	color = (1.0 - f) * day_col + f * night_col;
+	float f = (dot(light, vec3(0, 1, 0)) + 1) / 2.0f;
+	color = vec4((1.0 - f) * day_col + f * night_col, 1.0);
 }
