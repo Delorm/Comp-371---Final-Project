@@ -175,17 +175,23 @@ void processInput() {
 
 	    case GLFW_KEY_1: {
 		light_mov = false;
-		light_angle = 90.0f;
+		light_angle = 350.0f;
 		break;
 	    }
 
 	    case GLFW_KEY_2: {
 		light_mov = false;
-		light_angle = 110.0f;
+		light_angle = 75.0f;
 		break;
 	    }
 			     
 	    case GLFW_KEY_3: {
+		light_mov = false;
+		light_angle = 120.0f;
+		break;
+	    }
+
+	    case GLFW_KEY_4: {
 		light_mov = false;
 		light_angle = 270.0f;
 		break;
@@ -377,7 +383,8 @@ void drawGl() {
 
     // Light Direction
     if (light_mov) {
-	light_angle += 30 * delta_time; 
+	light_angle += ((30 * delta_time) + 360 % 360); 
+	cout << light_angle << endl;
     }
     glm::vec4 light_direction = glm::vec4(-1.0f, 0.0f, 0.0f, 0.0f);
     float light_angle_rad = (light_angle * PI / 180.0f);
