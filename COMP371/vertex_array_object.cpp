@@ -28,18 +28,19 @@ using namespace std;
 // Static Initilization
 const char* VertexArrayObject::MVP_SHADER_NAME = "mvp_matrix";
 const char* VertexArrayObject::M_SHADER_NAME   = "m_matrix";
+const char* VertexArrayObject::V_SHADER_NAME   = "v_matrix";
+const char* VertexArrayObject::P_SHADER_NAME   = "p_matrix";
+const char* VertexArrayObject::LIGHT_SHADER_NAME = "light_direction";
+const char* VertexArrayObject::EYE_SHADER_NAME = "eye_location";
 
 glm::mat4 VertexArrayObject::v_matrix = glm::mat4(1.0f);
 glm::mat4 VertexArrayObject::p_matrix = glm::mat4(1.0f);
 glm::mat4 VertexArrayObject::vp_matrix = glm::mat4(1.0f);
+glm::vec4 VertexArrayObject::light_direction = glm::vec4(1);
+glm::vec4 VertexArrayObject::eye_location = glm::vec4(1);
 
 // Basic Rountines
 VertexArrayObject::VertexArrayObject(int num_vbos) {
-    texture_binding_point[0] = GL_TEXTURE0;
-    texture_binding_point[1] = GL_TEXTURE1;
-    texture_binding_point[2] = GL_TEXTURE2;
-    texture_binding_point[3] = GL_TEXTURE3;
-    texture_binding_point[4] = GL_TEXTURE4;
     this->clear(num_vbos);
 }
 
@@ -98,10 +99,22 @@ void VertexArrayObject::setModelMatrix(glm::mat4 & new_model_matrix) {
     m_matrix = glm::mat4(new_model_matrix);
 }
 
+void VertexArrayObject::setLightDirection(glm::vec4 & direction) {
+    light_direction = direction;
+}
+
+void VertexArrayObject::setEyeLocation(glm::vec4 & location) {
+    eye_location = location;
+}
+
 void VertexArrayObject::registerShaderProgram(GLuint new_shader_program) {
     shader_program = new_shader_program;
     mvp_loc = glGetUniformLocation(new_shader_program, MVP_SHADER_NAME);
     m_loc = glGetUniformLocation(new_shader_program, M_SHADER_NAME);
+    v_loc = glGetUniformLocation(new_shader_program, V_SHADER_NAME);
+    p_loc = glGetUniformLocation(new_shader_program, P_SHADER_NAME);
+    light_loc = glGetUniformLocation(new_shader_program, LIGHT_SHADER_NAME);
+    eye_loc = glGetUniformLocation(new_shader_program, EYE_SHADER_NAME);
 }
 
 
@@ -162,6 +175,26 @@ void VertexArrayObject::setUVs(std::vector<glm::vec2> uvs) {
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     
+}
+
+void VertexArrayObject::setNormals(std::vector<glm::vec3> normals) {
+
+    geometry_size = normals.size();
+    glBindVertexArray(vao_loc);
+    glBindBuffer(GL_ARRAY_BUFFER, vbos_loc[vbos_counter]);
+    glBufferData(
+	    GL_ARRAY_BUFFER, 
+	    normals.size() * sizeof(glm::vec3), 
+	    &normals.front(), 
+	    GL_STATIC_DRAW
+	    );
+    glVertexAttribPointer(vbos_counter, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), 0);
+    glEnableVertexAttribArray(vbos_counter);
+    vbos_counter++;
+
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 }
 
 void VertexArrayObject::setColors(vector<glm::vec3> colors) {
@@ -230,6 +263,10 @@ void VertexArrayObject::draw() {
     glm::mat4 mvp_matrix = vp_matrix * m_matrix;
     glUniformMatrix4fv(mvp_loc, 1, GL_FALSE, glm::value_ptr(mvp_matrix));
     glUniformMatrix4fv(m_loc, 1, GL_FALSE, glm::value_ptr(m_matrix));
+    glUniformMatrix4fv(v_loc, 1, GL_FALSE, glm::value_ptr(v_matrix));
+    glUniformMatrix4fv(p_loc, 1, GL_FALSE, glm::value_ptr(p_matrix));
+    glUniform4fv(light_loc, 1, glm::value_ptr(light_direction));
+    glUniform4fv(eye_loc, 1, glm::value_ptr(eye_location));
 
     // Bind Texture
     for (int i = 0; i < num_of_textures; i++) {

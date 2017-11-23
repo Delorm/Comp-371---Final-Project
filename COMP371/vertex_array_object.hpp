@@ -34,10 +34,14 @@ class VertexArrayObject {
     private:
 	static const char* MVP_SHADER_NAME;
 	static const char* M_SHADER_NAME;
+	static const char* V_SHADER_NAME;
+	static const char* P_SHADER_NAME;
+	static const char* LIGHT_SHADER_NAME;
+	static const char* EYE_SHADER_NAME;
 	static glm::mat4 v_matrix, p_matrix, vp_matrix;
-	GLuint mvp_loc, shader_program, m_loc;
+	static glm::vec4 light_direction, eye_location;
+	GLuint mvp_loc, shader_program, m_loc, v_loc, p_loc, light_loc, eye_loc;
 	int num_of_textures;
-	int texture_binding_point[5]; 
 	GLuint* textures_loc;
 	char** textures_sampler_names;
 	int texture_index;
@@ -68,6 +72,8 @@ class VertexArrayObject {
 	// Static Routines
 	static void setViewMatrix(glm::mat4 &);
 	static void setProjectionMatrix(glm::mat4 &);
+	static void setLightDirection(glm::vec4 &);
+	static void setEyeLocation(glm::vec4 &);
 	void registerShaderProgram(GLuint shader_program);
 
 
@@ -75,6 +81,7 @@ class VertexArrayObject {
 	void setGeometry(std::vector<glm::vec3>);
 	void setTopology(std::vector<GLuint>);
 	void setUVs(vector<glm::vec2>);
+	void setNormals(vector<glm::vec3>);
 	void setColors(vector<glm::vec3>);
 	void setTexture(char*, char*, int);
 	void setNumOfTexture(int);

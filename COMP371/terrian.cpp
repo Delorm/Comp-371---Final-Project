@@ -27,8 +27,9 @@ std::vector<glm::vec3> Terrian::generateMap() {
 
 float Terrian::getHeight(float x, float z) {
 
-    float total = getInterpolatedNoise(x / 16.0f, z / 16.0f) * max;
-    total += getInterpolatedNoise(x / 8.0f, z / 8.0f) * (max / 3.0f);
+    float total = getInterpolatedNoise(x / 8.0f, z / 8.0f) * max;
+    total += getInterpolatedNoise(x / 4.0f, z / 4.0f) * (max / 3.0f);
+    total += getInterpolatedNoise(x / 2.0f, z / 2.0f) * (max / 9.0f);
     return total + shift;
 }
 
@@ -141,4 +142,28 @@ std::vector<glm::vec2> Terrian::generateUVs() {
 	uvs.push_back(glm::vec2(map[i].x / width, map[i].z / height));
     }
     return uvs;
+}
+
+std::vector<glm::vec3> Terrian::generateNormals() {
+
+    std::vector<glm::vec3> map = generateMap();
+    std::vector<GLuint> indices = findIndices();
+    glm::vec3* arr = new glm::vec3 [map.size()];
+    
+    for (int i = 0; i < indices.size(); i += 3) {
+	glm::vec3 p1 = map[indices[i+0]];
+	glm::vec3 p2 = map[indices[i+1]];
+	glm::vec3 p3 = map[indices[i+2]];
+
+	glm::vec3 u1 = p2 - p1;
+	glm::vec3 u2 = p3 - p1;
+	glm::vec3 n  = glm::normalize(glm::cross(u1, u2));
+	arr[indices[i+0]] = n;
+	arr[indices[i+1]] = n;
+	arr[indices[i+2]] = n;
+    }
+    std::vector<glm::vec3> normals(arr, arr + map.size());
+    delete [] arr;
+
+    return normals;
 }

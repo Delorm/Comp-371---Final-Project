@@ -47,6 +47,7 @@ class Terrian {
 	float getInterpolatedNoise(float, float);
 	vector<GLuint> findIndices();
 	std::vector<glm::vec2> generateUVs();
+	std::vector<glm::vec3> generateNormals();
 	void preCalculateMaps();
 };
 

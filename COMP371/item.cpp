@@ -1,8 +1,18 @@
 #include "item.hpp"
 #include "objloader.hpp"
 
+// Static Initialization
+
 Item::Item(int num_vbos) {
     clear(num_vbos);
+}
+
+void Item::setLightDirection(glm::vec4 & direction) {
+    VertexArrayObject::setLightDirection(direction);
+}
+
+void Item::setEyeLocation(glm::vec4 & loc) {
+    VertexArrayObject::setEyeLocation(loc);
 }
 
 void Item::loadObject(char* path) {
@@ -28,6 +38,10 @@ void Item::setUVs(std::vector<glm::vec2> uvs) {
     vao.setUVs(uvs);
 }
 
+void Item::setNormals(std::vector<glm::vec3> normals) {
+    vao.setNormals(normals);
+}
+
 void Item::setColors(std::vector<glm::vec3> colors) {
     vao.setColors(colors);
 }
@@ -49,8 +63,8 @@ void Item::setModelMatrix(glm::mat4 & model_matrix) {
     vao.setModelMatrix(model_matrix);
 }
 
-void Item::setShaderProgram(GLuint shaderProgram) {
-    vao.registerShaderProgram(shaderProgram);
+void Item::setShaderProgram(GLuint shader_program) {
+    vao.registerShaderProgram(shader_program);
 }
 
 void Item::draw() {

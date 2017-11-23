@@ -81,6 +81,7 @@ timeval current_time;
 float delta_time = 0.0f;
 float one_sec_counter = 0.0f;
 int frames_counter = 0;
+float light_angle = 45.0f;
 
 
 //std::vector<glm::vec3> terrian;
@@ -149,8 +150,7 @@ void processInput() {
 	    }
 
 	    case GLFW_KEY_V: {
-		key_set.erase(key);
-		free_look = !free_look;
+		key_set.erase(key); free_look = !free_look;
 		mov_speed = (free_look == false) ? WALK_SPEED : FLY_SPEED;
 		break;
 	    }
@@ -163,6 +163,16 @@ void processInput() {
 		} else {
 		    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
+		break;
+	    }
+
+	    case GLFW_KEY_P: {
+		light_angle += 30 * delta_time;
+		break;
+	    }
+
+	    case GLFW_KEY_O: {
+		light_angle -= 30 * delta_time;
 		break;
 	    }
 	}
@@ -178,21 +188,23 @@ void initGl() {
     glm::mat4 model_matrix = IDENTITY;
 
     // Terrain
-    Item item(2);
+    Item item(3);
     terrian = Terrian(T_WIDTH, T_HEIGHT, T_MAX, T_SHIFT);
     item.setGeometry(terrian.generateMap());
     item.setTopology(terrian.findIndices());
     item.setUVs(terrian.generateUVs());
+    item.setNormals(terrian.generateNormals());
 
     // Texture
     
-    item.setNumOfTexture(5);
+    item.setNumOfTexture(6);
     item.setShaderProgram(GlUtilities::loadShaders("resources/terrain_vertex.shader", "resources/terrain_fragment.shader"));
     item.setTexture("resources/terrain_background.png", "background", GL_LINEAR);
     item.setTexture("resources/terrain_r.png", "r_texture", GL_LINEAR);
     item.setTexture("resources/terrain_g.png", "g_texture", GL_LINEAR);
     item.setTexture("resources/terrain_b.png", "b_texture", GL_LINEAR);
     item.setTexture("resources/blend_map.png", "blend_map", GL_LINEAR);
+    item.setTexture("resources/displacement_map.png", "dis_map", GL_LINEAR);
 
     model_matrix = glm::translate(IDENTITY, glm::vec3( (float)-T_WIDTH / 2.0f, 0.0f, (float)-T_HEIGHT / 2.0f));
     item.setModelMatrix(model_matrix);
@@ -328,6 +340,13 @@ void initGl() {
 
 void drawGl() {
 
+    // Light Direction
+    glm::vec4 light_direction = glm::vec4(-1.0f, 0.0f, 0.0f, 0.0f);
+    float light_angle_rad = (light_angle * PI / 180.0f);
+    glm::mat4 light_rotation = glm::rotate(IDENTITY, light_angle_rad, glm::vec3(0, 0, 1));
+    light_direction = light_rotation * light_direction;
+    Item::setLightDirection(light_direction);
+
     // Skybox Model Matrix
     float scalar = T_WIDTH + T_HEIGHT;
     skybox_theta += PI / 240.0f * delta_time;
@@ -340,6 +359,8 @@ void drawGl() {
     // One View Matrix per Iteration
     glm::mat4 view_matrix = setCameraPosition();
     VertexArrayObject::setViewMatrix(view_matrix);
+    glm::vec4 eye4d = glm::vec4(eye.x, eye.y, eye.z, 1.0f);
+    Item::setEyeLocation(eye4d);
 
     // Draw All Objects
     for (unsigned int i = 0; i < items.size(); i++) {

@@ -31,11 +31,14 @@ class Item {
 
     public:
 	Item(int);
+	static void setLightDirection(glm::vec4 &);
+	static void setEyeLocation(glm::vec4 &);
 	void loadObject(char*);
 	void setGeometry(std::vector<glm::vec3>);
 	void setTopology(std::vector<unsigned int>);
 	void setColors(std::vector<glm::vec3>);
 	void setUVs(std::vector<glm::vec2>);
+	void setNormals(std::vector<glm::vec3>);
 	void setTexture(char*);
 	void setTexture(char*, char*, int);
 	void setNumOfTexture(int);
