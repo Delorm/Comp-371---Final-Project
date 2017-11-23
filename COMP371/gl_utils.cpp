@@ -127,7 +127,7 @@ GLFWwindow* GlUtilities::setupGlWindow(GLuint global_width, GLuint global_height
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GL_DEPTH_BITS, 24);
 
-    GLFWwindow* window = glfwCreateWindow(global_width, global_height, "Load one cube", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(global_width, global_height, "COMP 371 - Final Project", nullptr, nullptr);
     if (window == nullptr)
     {   
 	std::cout << "Failed to create GLFW window" << std::endl;
