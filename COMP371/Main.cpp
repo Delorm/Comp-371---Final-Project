@@ -333,8 +333,13 @@ void initGl() {
     skybox_index = items.size();
     item.clear(2);
     item.loadObject("resources/skybox.obj");
+
+    item.setNumOfTexture(2);
     item.setShaderProgram(GlUtilities::loadShaders("resources/skybox_vertex.shader", "resources/skybox_fragment.shader"));
-    item.setTexture("resources/skybox.png", "ourTexture1", GL_NEAREST);
+    item.setTexture("resources/skybox.png", "day", GL_NEAREST);
+    item.setTexture("resources/skybox_night.png", "night", GL_NEAREST);
+    
+    item.setTexture("resources/skybox2.png", "ourTexture1", GL_NEAREST);
     items.push_back(item);
 
 }
