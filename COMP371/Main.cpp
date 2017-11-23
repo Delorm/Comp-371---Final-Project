@@ -196,14 +196,15 @@ void initGl() {
     item.setNormals(terrian.generateNormals());
 
     // Texture
-    
-    item.setNumOfTexture(6);
+    item.setNumOfTexture(8);
     item.setShaderProgram(GlUtilities::loadShaders("resources/terrain_vertex.shader", "resources/terrain_fragment.shader"));
+    item.setTexture("resources/grass.png", "grass", GL_LINEAR);
     item.setTexture("resources/terrain_background.png", "background", GL_LINEAR);
     item.setTexture("resources/terrain_r.png", "r_texture", GL_LINEAR);
     item.setTexture("resources/terrain_g.png", "g_texture", GL_LINEAR);
     item.setTexture("resources/terrain_b.png", "b_texture", GL_LINEAR);
     item.setTexture("resources/blend_map.png", "blend_map", GL_LINEAR);
+    item.setTexture("resources/normal_map.png", "normal_map", GL_LINEAR);
     item.setTexture("resources/displacement_map.png", "dis_map", GL_LINEAR);
 
     model_matrix = glm::translate(IDENTITY, glm::vec3( (float)-T_WIDTH / 2.0f, 0.0f, (float)-T_HEIGHT / 2.0f));

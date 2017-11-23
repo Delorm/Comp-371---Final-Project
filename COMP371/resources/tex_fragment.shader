@@ -19,7 +19,7 @@ void main()
     float color_strength = 0.0f;
 
     // Ambience
-    float ka = 0.1;
+    float ka = 0.2;
     color_strength += ka;
 
     // Diffuse

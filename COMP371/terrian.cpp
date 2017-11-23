@@ -158,9 +158,12 @@ std::vector<glm::vec3> Terrian::generateNormals() {
 	glm::vec3 u1 = p2 - p1;
 	glm::vec3 u2 = p3 - p1;
 	glm::vec3 n  = glm::normalize(glm::cross(u1, u2));
-	arr[indices[i+0]] = n;
-	arr[indices[i+1]] = n;
-	arr[indices[i+2]] = n;
+	arr[indices[i+0]] += n;
+	arr[indices[i+1]] += n;
+	arr[indices[i+2]] += n;
+    }
+    for (int i = 0; i < map.size(); i++) {
+	arr[i] = glm::normalize(arr[i]);
     }
     std::vector<glm::vec3> normals(arr, arr + map.size());
     delete [] arr;
