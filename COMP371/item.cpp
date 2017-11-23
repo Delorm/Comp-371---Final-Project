@@ -1,8 +1,6 @@
 #include "item.hpp"
 #include "objloader.hpp"
 
-// Static Initialization
-
 Item::Item(int num_vbos) {
     clear(num_vbos);
 }

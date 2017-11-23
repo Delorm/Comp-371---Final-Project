@@ -11,8 +11,6 @@ out vec3 view_vector;
 
 uniform mat4 mvp_matrix;
 uniform mat4 m_matrix;
-uniform mat4 v_matrix;
-uniform mat4 p_matrix;
 uniform vec4 light_direction;
 uniform vec4 eye_location;
 

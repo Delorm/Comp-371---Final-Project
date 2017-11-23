@@ -299,9 +299,9 @@ void initGl() {
     item.setTexture("resources/water.png");
     items.push_back(item);
 
-    // Random Rock
+    // Random Rocks
     srand(time(NULL));
-    item.clear(2);
+    item.clear(3);
     item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
     item.setTexture("resources/rocky.jpg");
     for (int i = 0; i < R_NUMBER; i++) {
@@ -313,13 +313,15 @@ void initGl() {
 
 	std::vector<glm::vec3> vertices = GlUtilities::genRandomRock(R_MAX_RADIUS, R_POINTS);
 	std::vector<unsigned int> indices;
-	GlUtilities::convexHull(vertices, indices);
+	std::vector<glm::vec3> normals;
+	GlUtilities::convexHull(vertices, indices, normals);
 	std::vector<glm::vec2> uvs = GlUtilities::genSphericalUVs(vertices);
 
-	item.recycle(2);
+	item.recycle(3);
 	item.setGeometry(vertices);
 	item.setTopology(indices);
 	item.setUVs(uvs);
+	item.setNormals(normals);
 
 	model_matrix = glm::translate(IDENTITY, glm::vec3(x_loc, y_loc, z_loc));
 	item.setModelMatrix(model_matrix);
@@ -331,7 +333,7 @@ void initGl() {
     skybox_index = items.size();
     item.clear(2);
     item.loadObject("resources/skybox.obj");
-    item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
+    item.setShaderProgram(GlUtilities::loadShaders("resources/skybox_vertex.shader", "resources/skybox_fragment.shader"));
     item.setTexture("resources/skybox.png", "ourTexture1", GL_NEAREST);
     items.push_back(item);
 

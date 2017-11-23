@@ -160,7 +160,7 @@ GLFWwindow* GlUtilities::setupGlWindow(GLuint global_width, GLuint global_height
 }
 
 
-void GlUtilities::convexHull(std::vector<glm::vec3> & vertices, std::vector<unsigned int> & indices) {
+void GlUtilities::convexHull(std::vector<glm::vec3> & vertices, std::vector<unsigned int> & indices, std::vector<glm::vec3> & normals) {
 
     QuickHull<float> quickHull;
     std::vector<Vector3<float>> pointCloud;
@@ -189,6 +189,24 @@ void GlUtilities::convexHull(std::vector<glm::vec3> & vertices, std::vector<unsi
     for (int i = 0; i < indexBuffer.size(); i++) {
 	indices.push_back(indexBuffer[i]);
     }
+    
+    glm::vec3* arr = new glm::vec3 [vertices.size()];
+
+    for (int i = 0; i < indices.size(); i += 3) {
+	glm::vec3 p1 = vertices[indices[i+0]];
+	glm::vec3 p2 = vertices[indices[i+1]];
+	glm::vec3 p3 = vertices[indices[i+2]];
+
+	glm::vec3 u1 = p2 - p1; 
+	glm::vec3 u2 = p3 - p1; 
+	glm::vec3 n  = glm::normalize(glm::cross(u1, u2));
+	arr[indices[i+0]] = n;
+	arr[indices[i+1]] = n;
+	arr[indices[i+2]] = n;
+    }   
+    normals = std::vector<glm::vec3>(arr, arr + vertices.size());
+    delete [] arr;
+
 }
 
 

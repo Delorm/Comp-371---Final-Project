@@ -34,8 +34,6 @@ class VertexArrayObject {
     private:
 	static const char* MVP_SHADER_NAME;
 	static const char* M_SHADER_NAME;
-	static const char* V_SHADER_NAME;
-	static const char* P_SHADER_NAME;
 	static const char* LIGHT_SHADER_NAME;
 	static const char* EYE_SHADER_NAME;
 	static glm::mat4 v_matrix, p_matrix, vp_matrix;
