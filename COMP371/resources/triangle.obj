@@ -1,0 +1,17 @@
+#vertices
+v 1.000000 0.000000 0.000000
+v 0.000000 1.000000 0.000000
+v -1.000000 0.000000 0.000000
+
+#UV coordinates
+vt 1.0 0.0
+vt 0.5 1.0
+vt 0.0 0.0
+
+#normals
+vn 0.000000 0.000000 1.000000
+
+#faces (index data)
+# format: vertex/Uvcoordinate/normal
+f 1/1/1 2/2/1 3/3/1
+

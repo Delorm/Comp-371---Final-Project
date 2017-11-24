@@ -13,6 +13,7 @@ void main()
 {
     vec3 normal = texture(nor_map, tex_coord).xyz;
     vec4 myTex = texture(ourTexture1, tex_coord);
+
     if (myTex.a < 0.5) discard;
 
     vec4 object_color = myTex;
@@ -29,13 +30,14 @@ void main()
     color_strength +=  kd * strength;
 
     // Specular
-    float a = 10;
-    float ks = 0.2;
+    float a = 1;
+    float ks = 0.4;
     vec3 reflection_vector = reflect(-light_dir, normal);
     float prod = max(dot(view_vector, reflection_vector) , 0);
     strength = pow(prod, a);
     color_strength += ks * strength;
 
     color = color_strength * object_color;
+    color = clamp(color, 0.0f, 1.0f);
 
 }

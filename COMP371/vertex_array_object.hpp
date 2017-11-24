@@ -34,11 +34,14 @@ class VertexArrayObject {
     private:
 	static const char* MVP_SHADER_NAME;
 	static const char* M_SHADER_NAME;
+	static const char* V_SHADER_NAME;
 	static const char* LIGHT_SHADER_NAME;
 	static const char* EYE_SHADER_NAME;
+	static const char* SKYCOLOR;
+	static glm::vec3 skyColor;
 	static glm::mat4 v_matrix, p_matrix, vp_matrix;
 	static glm::vec4 light_direction, eye_location;
-	GLuint mvp_loc, shader_program, m_loc, v_loc, p_loc, light_loc, eye_loc;
+	GLuint mvp_loc, shader_program, m_loc, v_loc, p_loc, light_loc, eye_loc, sky_color;
 	int num_of_textures;
 	GLuint* textures_loc;
 	char** textures_sampler_names;
@@ -73,6 +76,7 @@ class VertexArrayObject {
 	static void setLightDirection(glm::vec4 &);
 	static void setEyeLocation(glm::vec4 &);
 	void registerShaderProgram(GLuint shader_program);
+	static void loadSkyColor(GLuint loc,float r, float g,float b);
 
 
 	// Specialized Routines

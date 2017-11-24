@@ -47,7 +47,7 @@ const int T_MAX = 10.0f;	// Highest & Lowest point in terrian
 const int T_SHIFT = 2;		// Increases land to water ratio
 
 // Rocks
-const int R_NUMBER = 250;
+const int R_NUMBER = 100;
 const int R_MAX_RADIUS = 3;
 const int R_POINTS = 20;
 
@@ -60,6 +60,7 @@ const GLuint INITIAL_WIDTH = 1280;
 const GLuint INITIAL_HEIGHT = 720;
 const glm::mat4 IDENTITY = glm::mat4(1.0f);
 const glm::vec3 ORIGIN = glm::vec3(0.0f);
+const float EPSILON = 0.01f;
 
 // Global Variables
 GLFWwindow* window;
@@ -103,6 +104,11 @@ void move(glm::vec3);
 void processInput(void);
 void getTimeNow(timeval &);
 void calcDeltaTime(void);
+float angle(glm::vec3, glm::vec3, glm::vec3);
+void printVector(glm::vec3);
+void printVector(char*, glm::vec3); 
+void addItem(glm::vec3);
+bool checkInsideTriangle(std::vector<glm::vec3>, glm::vec3);
 
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode) {
@@ -211,6 +217,7 @@ void initGl() {
 
     // Terrain
     Item item(3);
+
     terrian = Terrian(T_WIDTH, T_HEIGHT, T_MAX, T_SHIFT);
     item.setGeometry(terrian.generateMap());
     item.setTopology(terrian.findIndices());
@@ -232,36 +239,6 @@ void initGl() {
     item.setModelMatrix(model_matrix);
     items.push_back(item);
     
-    
-
-    // Cube #1
-    item.clear(2);
-    item.loadObject("resources/cube.obj");
-    model_matrix = glm::translate(IDENTITY, glm::vec3(0, 10, 0));
-    item.setModelMatrix(model_matrix);
-    item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
-    item.setTexture("resources/grass.png");
-    items.push_back(item);
-
-    // Cube #2
-    item.clear(2);
-    item.loadObject("resources/cube.obj");
-    model_matrix = glm::translate(IDENTITY, glm::vec3(10, 10, 0));
-    item.setModelMatrix(model_matrix);
-    item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
-    item.setTexture("resources/image2.png");
-    items.push_back(item);
-
-    // Rock
-    item.clear(2);
-    item.loadObject("resources/capsule.obj");
-    model_matrix = glm::translate(IDENTITY, glm::vec3(6, 8, 0));
-    item.setModelMatrix(model_matrix);
-    item.setShaderProgram(GlUtilities::loadShaders("resources/rock_vertex.shader", "resources/rock_fragment.shader"));
-    item.setNumOfTexture(1);
-    item.setTexture("resources/rocky.jpg");
-
-
     // Trees
     int num_of_trees = 10;
 
@@ -325,10 +302,10 @@ void initGl() {
 
     // Random Rocks
     srand(time(NULL));
-    item.clear(2);
-    item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
-    item.setNumOfTexture(3);
-    item.setTexture("resources/rocky.jpg");
+    item.clear(3);
+    item.setShaderProgram(GlUtilities::loadShaders("resources/rock_vertex.shader", "resources/rock_fragment.shader"));
+    item.setNumOfTexture(2);
+    item.setTexture("resources/rocky.jpg", "ourTexture1", GL_LINEAR);
     item.setTexture("resources/rock_nor.png", "nor_map", GL_LINEAR);
     items.push_back(item);
     for (int i = 0; i < R_NUMBER; i++) {
@@ -349,12 +326,15 @@ void initGl() {
 	item.setTopology(indices);
 	item.setUVs(uvs);
 	item.setNormals(normals);
+	item.position = glm::vec3(x_loc, y_loc, z_loc);
 
 	model_matrix = glm::translate(IDENTITY, glm::vec3(x_loc, y_loc, z_loc));
 	item.setModelMatrix(model_matrix);
+	item.setCollidable(true);
 	items.push_back(item);
 
     }
+    item.setCollidable(false);
 
     // Skybox
     skybox_index = items.size();
@@ -366,9 +346,7 @@ void initGl() {
     item.setTexture("resources/skybox.png", "day", GL_NEAREST);
     item.setTexture("resources/skybox_night.png", "night", GL_NEAREST);
     
-    item.setTexture("resources/skybox2.png", "ourTexture1", GL_NEAREST);
     items.push_back(item);
-
 }
 
 
@@ -384,7 +362,6 @@ void drawGl() {
     // Light Direction
     if (light_mov) {
 	light_angle += ((30 * delta_time) + 360 % 360); 
-	cout << light_angle << endl;
     }
     glm::vec4 light_direction = glm::vec4(-1.0f, 0.0f, 0.0f, 0.0f);
     float light_angle_rad = (light_angle * PI / 180.0f);
@@ -400,7 +377,6 @@ void drawGl() {
     model_matrix = glm::scale(model_matrix, glm::vec3(scalar));
     model_matrix = glm::rotate(model_matrix, skybox_theta, up);
     items[skybox_index].setModelMatrix(model_matrix);
-
 
     // Draw All Objects
     for (unsigned int i = 0; i < items.size(); i++) {
@@ -520,6 +496,46 @@ bool validMove(glm::vec3 step) {
 	return false;
     }
 
+    // Collision Detection:
+    glm::vec3 dir = glm::normalize(step);
+    glm::vec3 pos = eye;
+    for (int i = 0; i < items.size(); i++) {
+	Item item = items[i];
+	if (item.isCollidable()) {
+	    //Spherical Bounding Volume
+	    if (glm::distance(eye, item.position) > R_MAX_RADIUS * 2) continue;	
+
+
+	    std::vector<glm::vec3> vertices = item.vertices;
+	    std::vector<unsigned int> indices = item.edges;
+	    std::vector<glm::vec3> normals = item.normals;
+	    std::vector<float> d_coeff = item.d_coeff;
+	    std::vector<glm::vec3> points;
+
+	    for (int j = 0; j < indices.size(); j += 3) {
+		glm::vec3 normal = normals[j];
+		if (dot(normal, step) >= 0) continue;	    // Back Face Optimization
+
+		points.clear();
+		points.push_back(vertices[indices[j+0]]);
+		points.push_back(vertices[indices[j+1]]);
+		points.push_back(vertices[indices[j+2]]);
+
+		// Get t:
+		float d = d_coeff[j];
+		float t = - (glm::dot(normal, pos) + d) / glm::dot(normal, dir);
+		if (t > glm::length(step) + 1 || t < 0) continue;
+		glm::vec3 point = pos + t * dir ;
+
+		bool inside = checkInsideTriangle(points, point);
+
+		if (inside) {              // Point is inside the triangle
+		    return false;
+		}
+	    }
+	}
+    }
+
     return true;
 }
 
@@ -563,3 +579,39 @@ void calcDeltaTime() {
     } 
 
 }
+
+void printVector(glm::vec3 vec) {
+    cout << vec.x << " " << vec.y << " " << vec.z << endl;
+}
+
+void printVector(char* name, glm::vec3 vec) {
+    cout << name << ": " << vec.x << " " << vec.y << " " << vec.z << endl;
+}
+
+void addItem(glm::vec3 pos) {
+    glPointSize(10);
+    Item item(1);
+    std::vector<glm::vec3> vertices; vertices.push_back(pos);
+    item.setGeometry(vertices);
+
+    item.setShaderProgram(GlUtilities::loadShaders("resources/vertex.shader", "resources/fragment.shader"));
+    item.vao.setDrawingMode(VertexArrayObject::VERTICES);
+    item.vao.setPrimitive(VertexArrayObject::POINTS);
+    items.push_back(item);
+}
+
+bool checkInsideTriangle(std::vector<glm::vec3> t, glm::vec3 p) {
+
+    glm::vec3 u1 = t[1] - t[0];
+    glm::vec3 u2 = t[2] - t[0];
+    float area = glm::length(glm::cross(u1, u2)) / 2.0f;
+
+    float a = (float)glm::length(glm::cross(t[0] - p, t[1] - p)) / (2.0f * area);
+    float b = (float)glm::length(glm::cross(t[1] - p, t[2] - p)) / (2.0f * area);
+    float c = (float)glm::length(glm::cross(t[2] - p, t[0] - p)) / (2.0f * area);
+
+    if (abs(a+b+c - 1.0) < EPSILON && a >= 0 && a <= 1 && b >= 0 && b <= 1 && c >= 0 && c <= 1) {
+	return true;
+    }
+    return false;
+} 

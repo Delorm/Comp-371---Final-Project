@@ -8,6 +8,9 @@ in vec3 view_vector;
 out vec4 color;
 uniform sampler2D ourTexture1;
 
+in float visibility;
+uniform vec3 skyColor;
+
 
 void main()
 {
@@ -37,4 +40,5 @@ void main()
 
     color = color_strength * object_color;
 
+    //color = mix(vec4(skyColor, 1.0f), color, visibility);
 }

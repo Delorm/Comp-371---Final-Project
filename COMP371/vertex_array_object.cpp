@@ -28,9 +28,12 @@ using namespace std;
 // Static Initilization
 const char* VertexArrayObject::MVP_SHADER_NAME = "mvp_matrix";
 const char* VertexArrayObject::M_SHADER_NAME   = "m_matrix";
+const char* VertexArrayObject::V_SHADER_NAME   = "v_matrix";
+const char* VertexArrayObject::SKYCOLOR   = "skyColor";
 const char* VertexArrayObject::LIGHT_SHADER_NAME = "light_direction";
 const char* VertexArrayObject::EYE_SHADER_NAME = "eye_location";
 
+glm::vec3 VertexArrayObject::skyColor = glm::vec3(1.0f);
 glm::mat4 VertexArrayObject::v_matrix = glm::mat4(1.0f);
 glm::mat4 VertexArrayObject::p_matrix = glm::mat4(1.0f);
 glm::mat4 VertexArrayObject::vp_matrix = glm::mat4(1.0f);
@@ -109,8 +112,11 @@ void VertexArrayObject::registerShaderProgram(GLuint new_shader_program) {
     shader_program = new_shader_program;
     mvp_loc = glGetUniformLocation(new_shader_program, MVP_SHADER_NAME);
     m_loc = glGetUniformLocation(new_shader_program, M_SHADER_NAME);
+    v_loc = glGetUniformLocation(new_shader_program, V_SHADER_NAME);
     light_loc = glGetUniformLocation(new_shader_program, LIGHT_SHADER_NAME);
     eye_loc = glGetUniformLocation(new_shader_program, EYE_SHADER_NAME);
+    sky_color = glGetUniformLocation(new_shader_program, SKYCOLOR);
+
 }
 
 
@@ -259,6 +265,8 @@ void VertexArrayObject::draw() {
     glm::mat4 mvp_matrix = vp_matrix * m_matrix;
     glUniformMatrix4fv(mvp_loc, 1, GL_FALSE, glm::value_ptr(mvp_matrix));
     glUniformMatrix4fv(m_loc, 1, GL_FALSE, glm::value_ptr(m_matrix));
+    glUniformMatrix4fv(v_loc, 1, GL_FALSE, glm::value_ptr(v_matrix));
+    glUniform3fv(sky_color, 1, glm::value_ptr(skyColor));
     glUniform4fv(light_loc, 1, glm::value_ptr(light_direction));
     glUniform4fv(eye_loc, 1, glm::value_ptr(eye_location));
 
@@ -282,5 +290,11 @@ void VertexArrayObject::draw() {
 	glBindTexture(GL_TEXTURE_2D, 0);
     }
     glBindVertexArray(0);
+}
+
+void VertexArrayObject::loadSkyColor(GLuint loc,float r, float g,float b) {
+        //loadVector(location_skyColor, Vector3f(r,g,b));
+        glUniform3f(loc, r, g, b);
+	    
 }
 

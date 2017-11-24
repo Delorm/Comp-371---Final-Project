@@ -18,9 +18,11 @@ class Item {
 	std::vector<unsigned int> edges;
 	std::vector<glm::vec3> normals;
 	std::vector<glm::vec2> uvs;
+	std::vector<float> d_coeff;
 	glm::mat4 model_matrix;
+	bool collidable = false;
+	glm::vec3 position;
 	
-
 	// Colors
 	glm::vec3 ambient;
 	glm::vec3 diffuse;
@@ -44,10 +46,11 @@ class Item {
 	void setNumOfTexture(int);
 	void setModelMatrix(glm::mat4 &);
 	void setShaderProgram(GLuint);
+	void setCollidable(bool);
+	bool isCollidable();
 	void draw();
 	void clear(int);
 	void recycle(int);
-
 
 	// Getters
 	std::vector<glm::vec3> & getVertices();
