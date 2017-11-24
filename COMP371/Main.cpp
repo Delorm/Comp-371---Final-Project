@@ -242,11 +242,12 @@ void initGl() {
     // Trees
     int num_of_trees = 10;
 
+    for (int i = 0; i < num_of_trees; i++) {
+
     item.clear(2);
     item.loadObject("resources/tree.obj");
     item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
     item.setTexture("resources/trunc.jpg");
-    for (int i = 0; i < num_of_trees; i++) {
 
 	int x_loc = (rand() % T_WIDTH) - T_WIDTH / 2.0f;
 	int z_loc = (rand() % T_HEIGHT) - T_HEIGHT / 2.0f;
@@ -256,6 +257,8 @@ void initGl() {
 	model_matrix = glm::rotate(IDENTITY, rad, up);
 	model_matrix = glm::translate(model_matrix, glm::vec3(x_loc, y_loc, z_loc));
 	item.setModelMatrix(model_matrix);
+	item.setCollidable(true);
+	item.position = glm::vec3(x_loc, y_loc, z_loc);
 	items.push_back(item);
     }
 
