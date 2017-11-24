@@ -110,21 +110,16 @@ void printVector(char*, glm::vec3);
 void addItem(glm::vec3);
 bool checkInsideTriangle(std::vector<glm::vec3>, glm::vec3);
 
+#ifdef __linux__ 
+#elif _WIN32
+typedef struct timeval {
+      long tv_sec;
+        long tv_usec;
+} timeval;
+#endif
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode) {
 
-    if (action == GLFW_PRESS) {
-	key_set.insert(key);	
-    } else if (action == GLFW_RELEASE) {
-	key_set.erase(key);
-    }
-}
-
-void processInput() {
-
-    for (set<int>::iterator it = key_set.begin(); it != key_set.end(); it++) {
-
-	int key = *it;
 	switch (key) {
 	    case GLFW_KEY_ESCAPE:
 		close_window = true;
@@ -157,13 +152,11 @@ void processInput() {
 	    }
 
 	    case GLFW_KEY_V: {
-		key_set.erase(key); free_look = !free_look;
 		mov_speed = (free_look == false) ? WALK_SPEED : FLY_SPEED;
 		break;
 	    }
 
 	    case GLFW_KEY_T: {
-		key_set.erase(key);
 		wireframe = !wireframe;
 		if (wireframe) {
 		    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -174,7 +167,6 @@ void processInput() {
 	    }
 
 	    case GLFW_KEY_P: {
-		key_set.erase(key);
 		light_mov = !light_mov;
 		break;
 	    }
@@ -202,9 +194,11 @@ void processInput() {
 		light_angle = 270.0f;
 		break;
 	    }
-
 	}
-    }
+}
+
+void processInput() {
+
 }
 
 
