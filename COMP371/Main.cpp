@@ -246,7 +246,7 @@ void initGl() {
     item.setTexture("terrain_g", "g_texture", GL_LINEAR);
     item.setTexture("terrain_b", "b_texture", GL_LINEAR);
     item.setTexture("blend_map", "blend_map", GL_LINEAR);
-    item.setTexture("normal_map", "normal_map", GL_LINEAR);
+    item.setTexture("normal_map", "nor_map", GL_LINEAR);
 
     model_matrix = glm::translate(IDENTITY, glm::vec3( (float)-T_WIDTH / 2.0f, 0.0f, (float)-T_HEIGHT / 2.0f));
     item.setModelMatrix(model_matrix);
@@ -332,7 +332,6 @@ void initGl() {
     item.setShaderProgram(GlUtilities::loadShaders("water_vertex", "water_fragment"));
     item.setTexture("water");
     items.push_back(item);
-
 
     // Random Rocks
     srand(time(NULL));
