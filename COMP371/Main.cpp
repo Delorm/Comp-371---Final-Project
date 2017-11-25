@@ -536,6 +536,11 @@ bool validMove(glm::vec3 step) {
 	return false;
     }
 
+    // Terrain Size Bounding
+    float safety_margin = 2.0f;
+    if (abs(next_pos.x) + safety_margin >= T_WIDTH  / 2.0f) return false;
+    if (abs(next_pos.z) + safety_margin >= T_HEIGHT / 2.0f) return false;
+
     // Collision Detection:
     glm::vec3 dir = glm::normalize(step);
     glm::vec3 pos = eye;
