@@ -22,6 +22,7 @@ class Item {
 	glm::mat4 model_matrix;
 	bool collidable = false;
 	glm::vec3 position;
+	int type;
 	
 	// Colors
 	glm::vec3 ambient;

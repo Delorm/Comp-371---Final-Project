@@ -61,6 +61,8 @@ const GLuint INITIAL_HEIGHT = 720;
 const glm::mat4 IDENTITY = glm::mat4(1.0f);
 const glm::vec3 ORIGIN = glm::vec3(0.0f);
 const float EPSILON = 0.01f;
+const int TYPE_CONVEX_HULL = 0;
+const int TYPE_SKY_BOX = 1;
 
 // Global Variables
 GLFWwindow* window;
@@ -203,6 +205,15 @@ void processInput() {
 		break;
 	    }
 
+	    case GLFW_KEY_C: {
+		key_set.erase(key);
+		for (int i = 0; i < items.size(); i++) {
+		    if (items[i].type == TYPE_CONVEX_HULL) {
+			items[i].vao.visibility = !items[i].vao.visibility;
+		    }
+		} 
+	    }
+
 	}
     }
 }
@@ -241,14 +252,24 @@ void initGl() {
     
     // Trees
     int num_of_trees = 10;
+    Item volume(1);
+    volume.setShaderProgram(GlUtilities::loadShaders("resources/vertex.shader", "resources/fragment.shader"));
+    volume.vao.setVisibility(false);
+    
 
     for (int i = 0; i < num_of_trees; i++) {
 
-    item.clear(2);
-    item.loadObject("resources/tree.obj");
-    item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
-    item.setTexture("resources/trunc.jpg");
+	item.clear(2);
+	item.loadObject("resources/tree.obj");
+	item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
+	item.setTexture("resources/trunc.jpg");
 
+	std::vector<glm::vec3> vertices = item.vertices;;
+	std::vector<unsigned int> indices;
+	std::vector<glm::vec3> normals;
+	GlUtilities::convexHull(vertices, indices, normals);
+	item.vertices = vertices;
+	item.edges = indices;
 	int x_loc = (rand() % T_WIDTH) - T_WIDTH / 2.0f;
 	int z_loc = (rand() % T_HEIGHT) - T_HEIGHT / 2.0f;
 	float y_loc = mapHeight(x_loc, z_loc);
@@ -260,6 +281,14 @@ void initGl() {
 	item.setCollidable(true);
 	item.position = glm::vec3(x_loc, y_loc, z_loc);
 	items.push_back(item);
+
+
+	// Bounding Volume
+	volume.setGeometry(vertices);
+	volume.setTopology(indices);
+	volume.setModelMatrix(model_matrix);
+	volume.type = TYPE_CONVEX_HULL;
+	items.push_back(volume);
     }
 
 
@@ -420,6 +449,7 @@ int main() {
     glfwTerminate();
     return 0;
 }
+
 
 glm::mat4 setCameraPosition() {
 

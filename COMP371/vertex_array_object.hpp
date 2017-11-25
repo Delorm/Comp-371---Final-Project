@@ -49,7 +49,6 @@ class VertexArrayObject {
 
 	glm::mat4 m_matrix;
 	GLuint vao_loc;
-	bool visibility;
 	int geometry_size, topology_size;
 	modes drawing_mode, primitive;
 	int num_vbos;
@@ -77,6 +76,7 @@ class VertexArrayObject {
 	static void setEyeLocation(glm::vec4 &);
 	void registerShaderProgram(GLuint shader_program);
 	static void loadSkyColor(GLuint loc,float r, float g,float b);
+	bool visibility;
 
 
 	// Specialized Routines
