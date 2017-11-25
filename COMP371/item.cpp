@@ -14,7 +14,11 @@ void Item::setEyeLocation(glm::vec4 & loc) {
 }
 
 void Item::loadObject(char* path) {
-    loadOBJ(path, vertices, normals, uvs);
+    char full_path [30] = "";
+    strcat(full_path, "res/obj/");
+    strcat(full_path, path);
+    strcat(full_path, ".obj");
+    loadOBJ(full_path, vertices, normals, uvs);
 
     vao.setGeometry(vertices);
     vao.setDrawingMode(VertexArrayObject::VERTICES);
@@ -49,11 +53,15 @@ void Item::setColors(std::vector<glm::vec3> colors) {
 }
 
 void Item::setTexture(char* texture_name) {
-    vao.setTexture(texture_name, "ourTexture1", GL_LINEAR);
+    setTexture(texture_name, "ourTexture1", GL_LINEAR);
 }
 
 void Item::setTexture(char* texture_name, char* sampler_name, int interpolation_mode) {
-    vao.setTexture(texture_name, sampler_name, interpolation_mode);
+    char full_path [30] = "";
+    strcat(full_path, "res/texture/");
+    strcat(full_path, texture_name);
+    strcat(full_path, ".png");
+    vao.setTexture(full_path, sampler_name, interpolation_mode);
 }
 
 void Item::setNumOfTexture(int num) {

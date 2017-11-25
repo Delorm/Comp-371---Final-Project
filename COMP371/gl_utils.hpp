@@ -32,7 +32,7 @@ using namespace std;
 
 class GlUtilities {
     public: 
-	static GLuint loadShaders(string, string);
+	static GLuint loadShaders(char*, char*);
 	static GLFWwindow* setupGlWindow(GLuint width, GLuint height);
 	static void convexHull(std::vector<glm::vec3> &, std::vector<unsigned int> &, std::vector<glm::vec3> &);
 	static std::vector<glm::vec3> genRandomRock(float, int);

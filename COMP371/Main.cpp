@@ -237,14 +237,14 @@ void initGl() {
 
     // Texture
     item.setNumOfTexture(7);
-    item.setShaderProgram(GlUtilities::loadShaders("resources/terrain_vertex.shader", "resources/terrain_fragment.shader"));
-    item.setTexture("resources/grass.png", "grass", GL_LINEAR);
-    item.setTexture("resources/terrain_background.png", "background", GL_LINEAR);
-    item.setTexture("resources/terrain_r.png", "r_texture", GL_LINEAR);
-    item.setTexture("resources/terrain_g.png", "g_texture", GL_LINEAR);
-    item.setTexture("resources/terrain_b.png", "b_texture", GL_LINEAR);
-    item.setTexture("resources/blend_map.png", "blend_map", GL_LINEAR);
-    item.setTexture("resources/normal_map.png", "normal_map", GL_LINEAR);
+    item.setShaderProgram(GlUtilities::loadShaders("terrain_vertex", "terrain_fragment"));
+    item.setTexture("grass", "grass", GL_LINEAR);
+    item.setTexture("terrain_background", "background", GL_LINEAR);
+    item.setTexture("terrain_r", "r_texture", GL_LINEAR);
+    item.setTexture("terrain_g", "g_texture", GL_LINEAR);
+    item.setTexture("terrain_b", "b_texture", GL_LINEAR);
+    item.setTexture("blend_map", "blend_map", GL_LINEAR);
+    item.setTexture("normal_map", "normal_map", GL_LINEAR);
 
     model_matrix = glm::translate(IDENTITY, glm::vec3( (float)-T_WIDTH / 2.0f, 0.0f, (float)-T_HEIGHT / 2.0f));
     item.setModelMatrix(model_matrix);
@@ -253,16 +253,16 @@ void initGl() {
     // Trees
     int num_of_trees = 10;
     Item volume(1);
-    volume.setShaderProgram(GlUtilities::loadShaders("resources/vertex.shader", "resources/fragment.shader"));
+    volume.setShaderProgram(GlUtilities::loadShaders("vertex", "fragment"));
     volume.vao.setVisibility(false);
     
 
     for (int i = 0; i < num_of_trees; i++) {
 
 	item.clear(2);
-	item.loadObject("resources/tree.obj");
-	item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
-	item.setTexture("resources/trunc.jpg");
+	item.loadObject("tree");
+	item.setShaderProgram(GlUtilities::loadShaders("tex_vertex", "tex_fragment"));
+	item.setTexture("trunc");
 
 	std::vector<glm::vec3> vertices = item.vertices;;
 	std::vector<unsigned int> indices;
@@ -294,51 +294,51 @@ void initGl() {
 
     // Fern
     item.clear(2);
-    item.loadObject("resources/fern.obj");
+    item.loadObject("fern");
     model_matrix = glm::translate(IDENTITY, glm::vec3(32, 4, 0));
     item.setModelMatrix(model_matrix);
-    item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
-    item.setTexture("resources/fern.png");
+    item.setShaderProgram(GlUtilities::loadShaders("tex_vertex", "tex_fragment"));
+    item.setTexture("fern");
     items.push_back(item);
 
     // Tree
     item.clear(2);
-    item.loadObject("resources/tree.obj");
+    item.loadObject("tree");
     model_matrix = glm::translate(IDENTITY, glm::vec3(16, 4, 0));
     item.setModelMatrix(model_matrix);
-    item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
-    item.setTexture("resources/tree.png");
+    item.setShaderProgram(GlUtilities::loadShaders("tex_vertex", "tex_fragment"));
+    item.setTexture("tree");
     items.push_back(item);
 
     // Grass
     glm::mat4 trans;
     trans = glm::rotate(trans, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     item.clear(2);
-    item.loadObject("resources/grassModel.obj");
+    item.loadObject("grassModel");
     model_matrix = glm::translate(IDENTITY, glm::vec3(2, 2, 0));
     item.setModelMatrix(model_matrix);
-    item.setShaderProgram(GlUtilities::loadShaders("resources/tex_vertex.shader", "resources/tex_fragment.shader"));
-    item.setTexture("resources/grassTexture.png");
+    item.setShaderProgram(GlUtilities::loadShaders("tex_vertex", "tex_fragment"));
+    item.setTexture("grassTexture");
     items.push_back(item);
     
     
     // Water plane
     item.clear(1);
-    item.loadObject("resources/water.obj");
+    item.loadObject("water");
     model_matrix = glm::scale(IDENTITY, glm::vec3(T_WIDTH, 0, T_HEIGHT));
     item.setModelMatrix(model_matrix);
-    item.setShaderProgram(GlUtilities::loadShaders("resources/water_vertex.shader", "resources/water_fragment.shader"));
-    item.setTexture("resources/water.png");
+    item.setShaderProgram(GlUtilities::loadShaders("water_vertex", "water_fragment"));
+    item.setTexture("water");
     items.push_back(item);
 
 
     // Random Rocks
     srand(time(NULL));
     item.clear(3);
-    item.setShaderProgram(GlUtilities::loadShaders("resources/rock_vertex.shader", "resources/rock_fragment.shader"));
+    item.setShaderProgram(GlUtilities::loadShaders("rock_vertex", "rock_fragment"));
     item.setNumOfTexture(2);
-    item.setTexture("resources/rocky.jpg", "ourTexture1", GL_LINEAR);
-    item.setTexture("resources/rock_nor.png", "nor_map", GL_LINEAR);
+    item.setTexture("rocky", "ourTexture1", GL_LINEAR);
+    item.setTexture("rock_nor", "nor_map", GL_LINEAR);
     items.push_back(item);
     for (int i = 0; i < R_NUMBER; i++) {
 
@@ -371,12 +371,12 @@ void initGl() {
     // Skybox
     skybox_index = items.size();
     item.clear(2);
-    item.loadObject("resources/skybox.obj");
+    item.loadObject("skybox");
 
     item.setNumOfTexture(2);
-    item.setShaderProgram(GlUtilities::loadShaders("resources/skybox_vertex.shader", "resources/skybox_fragment.shader"));
-    item.setTexture("resources/skybox.png", "day", GL_NEAREST);
-    item.setTexture("resources/skybox_night.png", "night", GL_NEAREST);
+    item.setShaderProgram(GlUtilities::loadShaders("skybox_vertex", "skybox_fragment"));
+    item.setTexture("skybox", "day", GL_NEAREST);
+    item.setTexture("skybox_night", "night", GL_NEAREST);
     
     items.push_back(item);
 }

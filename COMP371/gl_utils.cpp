@@ -38,7 +38,16 @@ using namespace quickhull;
 
 const float MESH_MAX_HEIGHT = 50.0f;
 
-GLuint GlUtilities::loadShaders(string vertexShaderFile, string fragmentShaderFile) {
+GLuint GlUtilities::loadShaders(char* vertexShaderFileName, char* fragmentShaderFileName) {
+    char vertexShaderFile [50] = "";
+    strcat(vertexShaderFile, "res/shader/");
+    strcat(vertexShaderFile, vertexShaderFileName);
+    strcat(vertexShaderFile, ".shader");
+
+    char fragmentShaderFile [50] = "";
+    strcat(fragmentShaderFile, "res/shader/");
+    strcat(fragmentShaderFile, fragmentShaderFileName);
+    strcat(fragmentShaderFile, ".shader");
 
     // Read, Compile, and Attach Shader Programs
     string vertex_shader_path = vertexShaderFile;
