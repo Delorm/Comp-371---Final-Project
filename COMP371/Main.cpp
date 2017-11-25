@@ -261,7 +261,7 @@ void initGl() {
 
     for (int i = 0; i < num_of_trees; i++) {
 
-	item.clear(2);
+	item.clear(3);
 	item.loadObject("tree");
 	item.setShaderProgram(GlUtilities::loadShaders("tex_vertex", "tex_fragment"));
 	item.setTexture("trunc");
@@ -295,7 +295,7 @@ void initGl() {
 
 
     // Fern
-    item.clear(2);
+    item.clear(3);
     item.loadObject("fern");
     model_matrix = glm::translate(IDENTITY, glm::vec3(32, 4, 0));
     item.setModelMatrix(model_matrix);
@@ -304,7 +304,7 @@ void initGl() {
     items.push_back(item);
 
     // Tree
-    item.clear(2);
+    item.clear(3);
     item.loadObject("tree");
     model_matrix = glm::translate(IDENTITY, glm::vec3(16, 4, 0));
     item.setModelMatrix(model_matrix);
@@ -315,7 +315,7 @@ void initGl() {
     // Grass
     glm::mat4 trans;
     trans = glm::rotate(trans, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    item.clear(2);
+    item.clear(3);
     item.loadObject("grassModel");
     model_matrix = glm::translate(IDENTITY, glm::vec3(2, 2, 0));
     item.setModelMatrix(model_matrix);
@@ -369,7 +369,7 @@ void initGl() {
 
     // Skybox
     skybox_index = items.size();
-    item.clear(2);
+    item.clear(3);
     item.loadObject("skybox");
 
     item.setNumOfTexture(2);

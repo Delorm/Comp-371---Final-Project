@@ -26,6 +26,7 @@ void Item::loadObject(char* path) {
     for (int i = 0; i < vertices.size(); i++) {
 	edges.push_back(i);
     }
+    vao.setNormals(normals);
 }
 
 void Item::setGeometry(std::vector<glm::vec3> vertices) {
