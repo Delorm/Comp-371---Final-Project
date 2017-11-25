@@ -412,6 +412,13 @@ void drawGl() {
 
     // Draw All Objects
     for (unsigned int i = 0; i < items.size(); i++) {
+	if (items[i].type == TYPE_CONVEX_HULL) {
+	    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	} else if (wireframe) {
+	    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	} else {
+	    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
 	items[i].draw();
     }
 }
