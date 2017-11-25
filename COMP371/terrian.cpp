@@ -3,11 +3,12 @@
 
 using namespace std;
 
-Terrian::Terrian(int width, int height, int max, int shift) {
+Terrian::Terrian(int width, int height, int max, int shift, int land) {
     this->width = width;
     this->height = height;
     this->max = max;
     this->shift = shift;
+    this->land = land;
     seed = time(NULL);
     preCalculateMaps();
 }
@@ -30,12 +31,20 @@ float Terrian::getHeight(float x, float z) {
     float total = getInterpolatedNoise(x / 8.0f, z / 8.0f) * max;
     total += getInterpolatedNoise(x / 4.0f, z / 4.0f) * (max / 3.0f);
     total += getInterpolatedNoise(x / 2.0f, z / 2.0f) * (max / 9.0f);
+    total += getInterpolatedNoise(x / 1.0f, z / 1.0f) * (max / 27.0f);
+    
     return total + shift;
 }
 
 float Terrian::calcNoise(int x, int z) {
     srand(x * X_MULT + z * Z_MULT + seed);
     float y = ((float)rand() / RAND_MAX * 2) - 1;
+
+    // +ve elevation in the middle
+    bool x_inside = abs(x * 8 - width / 2.0f) < land;
+    bool z_inside = abs(z * 8 - width / 2.0f) < land;
+    if (x_inside && z_inside) return abs(y);
+
     return y;
 }
 

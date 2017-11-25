@@ -45,6 +45,7 @@ const int T_WIDTH = 128;
 const int T_HEIGHT = 128;
 const int T_MAX = 10.0f;	// Highest & Lowest point in terrian
 const int T_SHIFT = 2;		// Increases land to water ratio
+const int T_LAND = 10;		// Radius of Land in the center
 
 // Rocks
 const int R_NUMBER = 100;
@@ -111,6 +112,7 @@ void printVector(glm::vec3);
 void printVector(char*, glm::vec3); 
 void addItem(glm::vec3);
 bool checkInsideTriangle(std::vector<glm::vec3>, glm::vec3);
+glm::vec3 findValidPosition(void);
 
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode) {
@@ -229,7 +231,7 @@ void initGl() {
     // Terrain
     Item item(3);
 
-    terrian = Terrian(T_WIDTH, T_HEIGHT, T_MAX, T_SHIFT);
+    terrian = Terrian(T_WIDTH, T_HEIGHT, T_MAX, T_SHIFT, T_LAND);
     item.setGeometry(terrian.generateMap());
     item.setTopology(terrian.findIndices());
     item.setUVs(terrian.generateUVs());
@@ -270,16 +272,16 @@ void initGl() {
 	GlUtilities::convexHull(vertices, indices, normals);
 	item.vertices = vertices;
 	item.edges = indices;
-	int x_loc = (rand() % T_WIDTH) - T_WIDTH / 2.0f;
-	int z_loc = (rand() % T_HEIGHT) - T_HEIGHT / 2.0f;
-	float y_loc = mapHeight(x_loc, z_loc);
-	if (y_loc < 0) continue;
+
+	glm::vec3 position = findValidPosition();
+	if (position == glm::vec3(0)) continue;
+
 	float rad = rand() / RAND_MAX * 2 * PI;
 	model_matrix = glm::rotate(IDENTITY, rad, up);
-	model_matrix = glm::translate(model_matrix, glm::vec3(x_loc, y_loc, z_loc));
+	model_matrix = glm::translate(model_matrix, position);
 	item.setModelMatrix(model_matrix);
 	item.setCollidable(true);
-	item.position = glm::vec3(x_loc, y_loc, z_loc);
+	item.position = position;
 	items.push_back(item);
 
 
@@ -342,10 +344,8 @@ void initGl() {
     items.push_back(item);
     for (int i = 0; i < R_NUMBER; i++) {
 
-	int x_loc = (rand() % T_WIDTH) - T_WIDTH / 2.0f;
-	int z_loc = (rand() % T_HEIGHT) - T_HEIGHT / 2.0f;
-	float y_loc = mapHeight(x_loc, z_loc);
-	if (y_loc < 0) continue;
+	glm::vec3 position = findValidPosition();	
+	if (position == glm::vec3(0)) continue;
 
 	std::vector<glm::vec3> vertices = GlUtilities::genRandomRock(R_MAX_RADIUS, R_POINTS);
 	std::vector<unsigned int> indices;
@@ -358,9 +358,9 @@ void initGl() {
 	item.setTopology(indices);
 	item.setUVs(uvs);
 	item.setNormals(normals);
-	item.position = glm::vec3(x_loc, y_loc, z_loc);
+	item.position = position;
 
-	model_matrix = glm::translate(IDENTITY, glm::vec3(x_loc, y_loc, z_loc));
+	model_matrix = glm::translate(IDENTITY, position);
 	item.setModelMatrix(model_matrix);
 	item.setCollidable(true);
 	items.push_back(item);
@@ -660,3 +660,22 @@ bool checkInsideTriangle(std::vector<glm::vec3> t, glm::vec3 p) {
     }
     return false;
 } 
+
+glm::vec3 findValidPosition() {
+
+    int x_loc = (rand() % T_WIDTH) - T_WIDTH / 2.0f;
+    int z_loc = (rand() % T_HEIGHT) - T_HEIGHT / 2.0f;
+    float y_loc = mapHeight(x_loc, z_loc);
+
+    // Under Water Rejection
+    if (y_loc < 0) {
+	return glm::vec3(0);
+    }	
+
+    // Center Spawn Rejection
+    if (abs(x_loc - T_WIDTH / 2.0f) < T_LAND && abs(z_loc - T_WIDTH / 2.0f) < T_LAND) {
+	return glm::vec3(0);
+    }	
+
+    return glm::vec3(x_loc, y_loc, z_loc);
+}

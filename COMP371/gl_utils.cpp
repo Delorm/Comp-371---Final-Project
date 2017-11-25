@@ -130,6 +130,7 @@ GLuint GlUtilities::loadShaders(char* vertexShaderFileName, char* fragmentShader
 
 GLFWwindow* GlUtilities::setupGlWindow(GLuint global_width, GLuint global_height) {
 
+
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3); 
