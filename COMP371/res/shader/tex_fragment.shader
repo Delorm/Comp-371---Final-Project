@@ -41,4 +41,5 @@ void main()
     color = color_strength * object_color;
 
     //color = mix(vec4(skyColor, 1.0f), color, visibility);
+
 }

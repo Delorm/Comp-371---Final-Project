@@ -151,8 +151,10 @@ GLFWwindow* GlUtilities::setupGlWindow(GLuint global_width, GLuint global_height
     glDepthFunc(GL_LESS);
 
     // Enable Backface Culling
+    /*
     glEnable(GL_CULL_FACE);
     glFrontFace(GL_BACK);
+    */
 
     // Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
     glewExperimental = GL_TRUE;

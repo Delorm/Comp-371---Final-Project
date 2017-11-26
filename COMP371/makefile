@@ -3,7 +3,7 @@ STD = c++11
 DEBUG = -g
 CFLAGS =  -std=$(STD) -c $(DEBUG) -Wno-write-strings
 LFLAGS = -lglfw3 -lGL -lGLEW -lm -ldl -lXinerama -lXrandr -lXi -lXcursor -lX11 -lXxf86vm -lpthread -lSOIL
-OBJS = Main.o objloader.o vertex_array_object.o gl_utils.o terrian.o item.o QuickHull.o
+OBJS = Main.o objloader.o vertex_array_object.o gl_utils.o terrian.o item.o QuickHull.o l_system.o
 SHADERS = vertex.shader fragment.shader
 EXEC = a.out
 

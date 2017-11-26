@@ -278,6 +278,7 @@ void VertexArrayObject::draw() {
     
 
     int renderring_mode = (primitive == POINTS) ? GL_POINTS : GL_TRIANGLES;
+    if (primitive == LINES) renderring_mode = GL_LINE_STRIP;
     glBindVertexArray(vao_loc);
     if (drawing_mode == VERTICES) {
 	glDrawArrays(renderring_mode, 0, geometry_size);

@@ -21,6 +21,7 @@
 #include "item.hpp"
 #include "time.h"
 #include "set"
+#include "l_system.hpp"
 
 #ifdef __linux__ 
     //linux code goes here
@@ -223,6 +224,7 @@ void processInput() {
 
 void initGl() {
 
+
     // Set Projection Matrix 
     glm::mat4 projection_matrix = glm::perspective(45.0f, (GLfloat)INITIAL_WIDTH / (GLfloat)INITIAL_HEIGHT, PROJ_NEAR_PLANE, PROJ_FAR_PLANE);
     VertexArrayObject::setProjectionMatrix(projection_matrix);
@@ -251,6 +253,7 @@ void initGl() {
     model_matrix = glm::translate(IDENTITY, glm::vec3( (float)-T_WIDTH / 2.0f, 0.0f, (float)-T_HEIGHT / 2.0f));
     item.setModelMatrix(model_matrix);
     items.push_back(item);
+    
     
     // Trees
     int num_of_trees = 10;
@@ -292,6 +295,7 @@ void initGl() {
 	volume.type = TYPE_CONVEX_HULL;
 	items.push_back(volume);
     }
+    
 
 
     // Fern
@@ -378,6 +382,43 @@ void initGl() {
     item.setTexture("skybox_night", "night", GL_NEAREST);
     
     items.push_back(item);
+
+
+
+    // Test L-System
+    const int TR_NUM = 10;
+    const int TR_ITERATIONS = 5;
+    item.clear(3);
+    item.setShaderProgram(GlUtilities::loadShaders("tex_vertex", "tex_fragment"));
+    item.setTexture("trunc");
+    
+     
+    for (int i = 0; i < TR_NUM; i++) {
+
+	glm::vec3 position = findValidPosition();
+	if (position == glm::vec3(0)) continue;
+	position.y -= 0.01;
+
+	LSystem lsystem;
+	lsystem.generate(TR_ITERATIONS);
+
+	item.recycle(3);
+	std::vector<glm::vec3> vertices;
+	std::vector<unsigned int> indices;
+	std::vector<glm::vec2> uvs;
+	std::vector<glm::vec3> normals;
+	lsystem.getBark(vertices, indices, uvs, normals);
+
+	item.setGeometry(vertices);
+	item.setTopology(indices);
+	item.setUVs(uvs);
+	item.setNormals(normals);
+	model_matrix = glm::translate(IDENTITY, position);
+	item.setModelMatrix(model_matrix);
+
+	items.push_back(item);
+    }
+
 }
 
 
@@ -672,7 +713,7 @@ glm::vec3 findValidPosition() {
     }	
 
     // Center Spawn Rejection
-    if (abs(x_loc - T_WIDTH / 2.0f) < T_LAND && abs(z_loc - T_WIDTH / 2.0f) < T_LAND) {
+    if (abs(x_loc) < T_LAND && abs(z_loc) < T_LAND) {
 	return glm::vec3(0);
     }	
 
