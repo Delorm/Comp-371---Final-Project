@@ -11,8 +11,13 @@ out vec3 view_vector;
 
 uniform mat4 mvp_matrix;
 uniform mat4 m_matrix;
+uniform mat4 v_matrix;
 uniform vec4 light_direction;
 uniform vec4 eye_location;
+
+out float visibility;
+uniform float density;
+uniform float gradient;
 
 void main()
 {
@@ -27,4 +32,11 @@ void main()
     view_vector = normalize(view_vector);
 
     tex_coord = texCoord;
+
+    // Fog
+    vec4 positionRelativeToCam = v_matrix * m_matrix * vec4(position, 1);
+    float distance = length(positionRelativeToCam.xyz);
+    visibility = exp(-pow((distance*density), gradient));
+    visibility = clamp(visibility,0.0,1.0);
+
 }

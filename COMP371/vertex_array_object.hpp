@@ -31,17 +31,20 @@ class VertexArrayObject {
     public:
 	enum modes {VERTICES, ELEMENTS, TRIANGLES, POINTS, LINES};
 
-    private:
+    public:
 	static const char* MVP_SHADER_NAME;
 	static const char* M_SHADER_NAME;
 	static const char* V_SHADER_NAME;
 	static const char* LIGHT_SHADER_NAME;
 	static const char* EYE_SHADER_NAME;
 	static const char* SKYCOLOR;
+	static const char* FOG_DENSITY_SHADER_NAME;
+	static const char* FOG_GRADIENT_SHADER_NAME;
 	static glm::vec3 skyColor;
 	static glm::mat4 v_matrix, p_matrix, vp_matrix;
 	static glm::vec4 light_direction, eye_location;
-	GLuint mvp_loc, shader_program, m_loc, v_loc, p_loc, light_loc, eye_loc, sky_color;
+	static float fog_density, fog_gradient;
+	GLuint mvp_loc, shader_program, m_loc, v_loc, p_loc, light_loc, eye_loc, sky_color, density_loc, gradient_loc;
 	int num_of_textures;
 	GLuint* textures_loc;
 	char** textures_sampler_names;
@@ -74,8 +77,8 @@ class VertexArrayObject {
 	static void setProjectionMatrix(glm::mat4 &);
 	static void setLightDirection(glm::vec4 &);
 	static void setEyeLocation(glm::vec4 &);
+	static void loadSkyColor(glm::vec3 &);
 	void registerShaderProgram(GLuint shader_program);
-	static void loadSkyColor(GLuint loc,float r, float g,float b);
 	bool visibility;
 
 

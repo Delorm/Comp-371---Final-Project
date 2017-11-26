@@ -32,6 +32,8 @@ const char* VertexArrayObject::V_SHADER_NAME   = "v_matrix";
 const char* VertexArrayObject::SKYCOLOR   = "skyColor";
 const char* VertexArrayObject::LIGHT_SHADER_NAME = "light_direction";
 const char* VertexArrayObject::EYE_SHADER_NAME = "eye_location";
+const char* VertexArrayObject::FOG_DENSITY_SHADER_NAME = "density";
+const char* VertexArrayObject::FOG_GRADIENT_SHADER_NAME = "gradient";
 
 glm::vec3 VertexArrayObject::skyColor = glm::vec3(1.0f);
 glm::mat4 VertexArrayObject::v_matrix = glm::mat4(1.0f);
@@ -39,6 +41,8 @@ glm::mat4 VertexArrayObject::p_matrix = glm::mat4(1.0f);
 glm::mat4 VertexArrayObject::vp_matrix = glm::mat4(1.0f);
 glm::vec4 VertexArrayObject::light_direction = glm::vec4(1);
 glm::vec4 VertexArrayObject::eye_location = glm::vec4(1);
+float VertexArrayObject::fog_density = 0.0;
+float VertexArrayObject::fog_gradient = 1.0f;
 
 // Basic Rountines
 VertexArrayObject::VertexArrayObject(int num_vbos) {
@@ -116,7 +120,8 @@ void VertexArrayObject::registerShaderProgram(GLuint new_shader_program) {
     light_loc = glGetUniformLocation(new_shader_program, LIGHT_SHADER_NAME);
     eye_loc = glGetUniformLocation(new_shader_program, EYE_SHADER_NAME);
     sky_color = glGetUniformLocation(new_shader_program, SKYCOLOR);
-
+    gradient_loc = glGetUniformLocation(new_shader_program, FOG_GRADIENT_SHADER_NAME);
+    density_loc = glGetUniformLocation(new_shader_program, FOG_DENSITY_SHADER_NAME);
 }
 
 
@@ -269,6 +274,8 @@ void VertexArrayObject::draw() {
     glUniform3fv(sky_color, 1, glm::value_ptr(skyColor));
     glUniform4fv(light_loc, 1, glm::value_ptr(light_direction));
     glUniform4fv(eye_loc, 1, glm::value_ptr(eye_location));
+    glUniform1f(density_loc, fog_density);
+    glUniform1f(gradient_loc, fog_gradient);
 
     // Bind Texture
     for (int i = 0; i < num_of_textures; i++) {
@@ -293,9 +300,7 @@ void VertexArrayObject::draw() {
     glBindVertexArray(0);
 }
 
-void VertexArrayObject::loadSkyColor(GLuint loc,float r, float g,float b) {
-        //loadVector(location_skyColor, Vector3f(r,g,b));
-        glUniform3f(loc, r, g, b);
-	    
+void VertexArrayObject::loadSkyColor(glm::vec3 & skyC) {
+    skyColor = skyC;
 }
 

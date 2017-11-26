@@ -8,6 +8,8 @@ out vec4 color;
 uniform sampler2D ourTexture1;
 uniform sampler2D nor_map;
 
+in float visibility;
+uniform vec3 skyColor;
 
 void main()
 {
@@ -46,5 +48,8 @@ void main()
 
     color = color_strength * object_color;
     color = clamp(color, 0.0f, 1.0f);
+
+    color = mix(vec4(skyColor, 1.0f), color, visibility);
+ 
 
 }

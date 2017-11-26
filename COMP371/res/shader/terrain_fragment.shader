@@ -6,6 +6,8 @@ in vec3 pix_normal;
 in vec3 view_vector;
 
 out vec4 color;
+in float visibility;
+uniform vec3 skyColor;
 
 uniform sampler2D background;
 uniform sampler2D r_texture;
@@ -54,4 +56,7 @@ void main()
     color_strength += dim * ks * specular_strength;
 
     color = vec4(color_strength * object_color.xyz, 1);
+    color = mix(vec4(skyColor, 1.0f), color, visibility);
+
+
 } 

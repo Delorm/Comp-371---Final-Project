@@ -10,6 +10,8 @@ uniform sampler2D ourTexture1;
 
 in float visibility;
 uniform vec3 skyColor;
+uniform float density;
+uniform float gradient;
 
 
 void main()
@@ -45,6 +47,6 @@ void main()
 
     color = color_strength * object_color;
 
-    //color = mix(vec4(skyColor, 1.0f), color, visibility);
+    color = mix(vec4(skyColor, 1.0f), color, visibility);
 
 }

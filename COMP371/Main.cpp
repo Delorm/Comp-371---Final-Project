@@ -1,8 +1,6 @@
 /*
  * COMP 371: Final Project
  * October 12, 2017
- * Skeleton Adopted and Modified
- * From learnopengl.com
  */
 
 #include "stdio.h"
@@ -25,19 +23,19 @@
 
 #ifdef __linux__ 
     //linux code goes here
-    #include "GL/glew.h"	// include GL Extension Wrangler
-    #include "GLFW/glfw3.h"	// include GLFW helper library
+    #include "GL/glew.h"	    // include GL Extension Wrangler
+    #include "GLFW/glfw3.h"	    // include GLFW helper library
 #elif _WIN32
     // windows code goes here
-    #include "..\glew\glew.h"	// include GL Extension Wrangler
-    #include "..\glfw\glfw3.h"	// include GLFW helper library
+    #include "..\glew\glew.h"	    // include GL Extension Wrangler
+    #include "..\glfw\glfw3.h"	    // include GLFW helper library
 #endif
 
 using namespace std;
 
 // Configurable Constant Variables
 const float MOUSE_SENSITIVITY = 0.1f;
-const float CHAR_HEIGHT = 1.0f;
+const float CHAR_HEIGHT = 1.0f;	    // Height From Ground
 const float WALK_SPEED = 5.0f;
 const float FLY_SPEED = 50.0f;
 const float PI = 3.14159265359f;
@@ -45,21 +43,26 @@ const float PI = 3.14159265359f;
 // Terrian
 const int T_WIDTH = 128;
 const int T_HEIGHT = 128;
-const int T_MAX = 10.0f;	// Highest & Lowest point in terrian
-const int T_SHIFT = 2;		// Increases land to water ratio
-const int T_LAND = 10;		// Radius of Land in the center
+const int T_MAX = 10.0f;	    // Highest & Lowest point in terrian
+const int T_SHIFT = 2;		    // Increases land to water ratio
+const int T_LAND = 10;		    // Radius of Land in the center
 
 // Rocks
-const int R_NUMBER = 100;
-const int R_MAX_RADIUS = 3;
-const int R_POINTS = 20;
+const int R_NUMBER = 100;	    // Number of Rocks
+const int R_MAX_RADIUS = 3;	    // Max Radius of Rock
+const int R_POINTS = 20;	    // Number of points(resolution)
 
 // Tress
-const int TR_NUM = 30;
-const int TR_ITERATIONS = 5;
-const float TR_ALPHA = PI / 4;
-const float TR_LENGTH = 1.0f;
-const float TR_RADIUS = 0.2;
+const int TR_NUM = 30;		    // Total Number of Trees
+const int TR_ITERATIONS = 5;	    // L-System Iterations
+const float TR_ALPHA = PI / 4;	    // Branching Angle
+const float TR_LENGTH = 1.0f;	    // Initial Trunc Length
+const float TR_RADIUS = 0.2;	    // Trunc Radius
+
+// Fog
+const float FOG_DENSITY = 0.04;
+const float FOG_GRADIENT = 1.0;
+
 
 // Constant Variables
 const float BACKGROUND_COLOR = 0.4f; 
@@ -70,37 +73,37 @@ const GLuint INITIAL_HEIGHT = 720;
 const glm::mat4 IDENTITY = glm::mat4(1.0f);
 const glm::vec3 ORIGIN = glm::vec3(0.0f);
 const float EPSILON = 0.01f;
-const int TYPE_CONVEX_HULL = 0;
+const int TYPE_CONVEX_HULL = 0;	    // Numeric Types
 const int TYPE_SKY_BOX = 1;
 const int TYPE_LEAVES = 2;
 
 // Global Variables
 GLFWwindow* window;
-bool close_window = false;
+
 std::vector<Item> items;
 glm::vec3 center(0.0f, 0.0f, 0.0f);
 glm::vec3 up(0.0f, 1.0f, 0.0f);
 glm::vec3 eye(0.0f, 0.0f, 5.0f);
-bool free_look = false;
-bool wireframe = false; 
+
 Terrian terrian;
-float mov_speed = WALK_SPEED;
-float teapot_ang = 0.0f;
 set<int> key_set;
-int skybox_index;
-float skybox_theta = 0.0f;
 timeval last_time;		// Timekeeping variables
 timeval current_time;
-float delta_time = 0.0f;
-float one_sec_counter = 0.0f;
 int frames_counter = 0;
+int skybox_index;
+float mov_speed = WALK_SPEED;
 float light_angle = 45.0f;
+float fog_density = 0.0f;
+float fog_gradient = 1.0f;
+float one_sec_counter = 0.0f;
+float delta_time = 0.0f;
+float skybox_theta = 0.0f;
+bool fog = false;
+bool free_look = false;
+bool wireframe = false; 
+bool close_window = false;
 bool light_mov = true;
 
-
-//std::vector<glm::vec3> terrian;
-int terrian_width;
-int terrian_height;
 
 // Prototypes definition
 void initGl(void);
@@ -226,6 +229,19 @@ void processInput() {
 		break;
 	    }
 
+	    case GLFW_KEY_F: {
+		key_set.erase(key);
+		fog = !fog;
+		if (fog) {
+		    fog_density = FOG_DENSITY;
+		    fog_gradient = FOG_GRADIENT;
+		} else {
+		    fog_density = 0.0f;
+		    fog_gradient = 1.0f;
+		}
+
+	    }
+
 	}
     }
 }
@@ -286,6 +302,7 @@ void initGl() {
     items.push_back(item);
     
     // Water plane
+    /*
     item.clear(1);
     item.loadObject("water");
     model_matrix = glm::scale(IDENTITY, glm::vec3(T_WIDTH, 0, T_HEIGHT));
@@ -293,6 +310,7 @@ void initGl() {
     item.setShaderProgram(GlUtilities::loadShaders("water_vertex", "water_fragment"));
     item.setTexture("water");
     items.push_back(item);
+    */
 
     // Random Rocks
     srand(time(NULL));
@@ -351,7 +369,6 @@ void initGl() {
     item.setShaderProgram(GlUtilities::loadShaders("skybox_vertex", "skybox_fragment"));
     item.setTexture("skybox", "day", GL_NEAREST);
     item.setTexture("skybox_night", "night", GL_NEAREST);
-    
     items.push_back(item);
 
 
@@ -436,6 +453,8 @@ void drawGl() {
     // One View Matrix per Iteration
     glm::mat4 view_matrix = setCameraPosition();
     VertexArrayObject::setViewMatrix(view_matrix);
+    VertexArrayObject::fog_density = fog_density;
+    VertexArrayObject::fog_gradient = fog_gradient;
     glm::vec4 eye4d = glm::vec4(eye.x, eye.y, eye.z, 1.0f);
     Item::setEyeLocation(eye4d);
 
@@ -449,6 +468,12 @@ void drawGl() {
     glm::mat4 light_rotation = glm::rotate(IDENTITY, light_angle_rad, glm::vec3(0, 0, 1));
     light_direction = light_rotation * light_direction;
     Item::setLightDirection(light_direction);
+
+    // Fog SkyBlend Color (adjusted with Daytime)
+    float bg = BACKGROUND_COLOR;
+    float mult = (dot(-glm::vec3(light_direction), up) * 0.2f)  + 0.5f;
+    glm::vec3 skyColor = glm::vec3(mult, mult, mult);
+    VertexArrayObject::loadSkyColor(skyColor);
 
     // Skybox Model Matrix
     float scalar = T_WIDTH + T_HEIGHT;
@@ -583,7 +608,7 @@ bool validMove(glm::vec3 step) {
     glm::vec3 char_pos = eye - glm::vec3(0, CHAR_HEIGHT, 0);
     glm::vec3 next_pos = char_pos + step;
     if (mapHeight(next_pos.x, next_pos.z) <= 0) {
-	return false;
+	//return false;
     }
 
     // Terrain Size Bounding

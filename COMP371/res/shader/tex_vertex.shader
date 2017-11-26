@@ -17,8 +17,8 @@ uniform vec4 light_direction;
 uniform vec4 eye_location;
 
 out float visibility;
-const float density = 0.0015;
-const float gradient = 0.5;
+uniform float density;
+uniform float gradient;
 
 void main()
 {
@@ -35,7 +35,7 @@ void main()
     tex_coord = texCoord;
 
    //Fog
-    vec4 positionRelativeToCam = v_matrix * gl_Position;
+    vec4 positionRelativeToCam = v_matrix * m_matrix * vec4(position, 1);
     float distance = length(positionRelativeToCam.xyz);
     visibility = exp(-pow((distance*density), gradient));
     visibility = clamp(visibility,0.0,1.0);    
