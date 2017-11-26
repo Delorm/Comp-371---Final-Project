@@ -25,11 +25,15 @@ class LSystem {
 	    string a;
 	    string b;
 	};
-	LSystem();
+	LSystem(float, float, float);
 	void makeRule(string, string);
 	string getMessage();
 	void generate(int);
-	void getBark(
+	void getTree(
+		std::vector<glm::vec3> &, 
+		std::vector<unsigned int> &, 
+		std::vector<glm::vec2> &, 
+		std::vector<glm::vec3> &, 
 		std::vector<glm::vec3> &, 
 		std::vector<unsigned int> &, 
 		std::vector<glm::vec2> &, 
@@ -37,6 +41,14 @@ class LSystem {
 		);
 
 	void drawBark(
+		glm::vec3 &, glm::vec3 &, 
+		float, std::vector<glm::vec3> &, 
+		std::vector<unsigned int> &, 
+		std::vector<glm::vec2> &, 
+		std::vector<glm::vec3> &
+		);
+
+	void drawLeaves(
 		glm::vec3 &, glm::vec3 &, 
 		float, std::vector<glm::vec3> &, 
 		std::vector<unsigned int> &, 
@@ -54,6 +66,10 @@ class LSystem {
 	float alpha = PI / 4.0f;
 	float random = 0.1;
 	float points = 10;
+	float l_width = 0.2f;
+	float l_height = 0.3f;
+	float radius;
+	float seg_length;
 
 
 	

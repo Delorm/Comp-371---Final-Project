@@ -9,7 +9,7 @@
 
 using namespace std;
 
-LSystem::LSystem() {
+LSystem::LSystem(float seg_length, float radius, float alpha) {
 
     axiom = "A";
     message = axiom;
@@ -17,6 +17,12 @@ LSystem::LSystem() {
     makeRule("A", "f[-s(0.8)r(0.2)C]s(0.5)r(0.9)f[+^r(0.2)C]fs(2)[+B][-B][<B][>B]");
     makeRule("B", "s(0.7)r(0.6)(f[+B][-B][^B][vfB]");
     makeRule("C", "f");
+
+
+    // Initialization:
+    this->seg_length = seg_length;
+    this->radius = radius;
+    this-> alpha = alpha;
 
 }
 
@@ -59,16 +65,20 @@ string LSystem::getMessage() {
 }
 
 
-void LSystem::getBark(
+void LSystem::getTree(
 	std::vector<glm::vec3> & vertices, 
 	std::vector<unsigned int> & indices, 
 	std::vector<glm::vec2> & uvs, 
-	std::vector<glm::vec3> & normals) {
+	std::vector<glm::vec3> & normals, 
+	std::vector<glm::vec3> & l_vertices, 
+	std::vector<unsigned int> & l_indices, 
+	std::vector<glm::vec2> & l_uvs, 
+	std::vector<glm::vec3> & l_normals) {
 
     glm::vec3 curr_pos = glm::vec3(0, 0, 0);
     glm::vec3 curr_dir = glm::vec3(0, 1, 0);
-    float curr_len = 1.0f;
-    float curr_tru = 0.1f;
+    float curr_len = seg_length;
+    float curr_tru = radius;
     stack<glm::vec3> pos_stack;
     stack<glm::vec3> dir_stack;
     stack<float> len_stack;
@@ -153,6 +163,8 @@ void LSystem::getBark(
 	    float mult = getMultiplier(i);
 	    curr_tru *= mult;
 
+	} else if (c == 'A' || c == 'B' || c == 'C') {
+	    drawLeaves(curr_pos, curr_dir, curr_tru, l_vertices, l_indices, l_uvs, l_normals);
 	} 
     }
 }
@@ -200,6 +212,7 @@ void LSystem::drawBark(
     
     bool even = true;
     glm::vec3 last_point = glm::vec3(0, 0, 0);
+    int iteration = 0;
     for (float a = 2.0f * PI; a >= -0.1f; a -= a_step) {
 
 	// Vertices
@@ -214,8 +227,8 @@ void LSystem::drawBark(
 
 	// UVs
 	even = !even;
-	uvs.push_back(glm::vec2(even, 0));
-	uvs.push_back(glm::vec2(even, 1));
+	uvs.push_back(glm::vec2(iteration * 1.0f / points, 0));
+	uvs.push_back(glm::vec2(iteration * 1.0f / points, 1));
 
 	// Normals
 	glm::vec3 normal = glm::normalize(glm::cross(u1, u2));
@@ -223,6 +236,7 @@ void LSystem::drawBark(
 	normals.push_back(normal);
 
 	last_point = p3;
+	iteration++;
     }	
 
     for (int i = 0; i < 2 * points; i += 2)  {
@@ -238,6 +252,53 @@ void LSystem::drawBark(
 	
     }
     
+}
+
+void LSystem::drawLeaves(
+	glm::vec3 & start, 
+	glm::vec3 & dir, 
+	float radius, 
+	std::vector<glm::vec3> & vertices, 
+	std::vector<unsigned int> & indices, 
+	std::vector<glm::vec2> & uvs, 
+	std::vector<glm::vec3> & normals) {
+
+
+
+
+	int offset = vertices.size();
+
+	// Vertices
+	glm::vec3 end = start + l_height * dir;
+	glm::vec3 side = l_width * glm::normalize(glm::cross(end - start, glm::vec3(0, 1, 0))); 
+
+	vertices.push_back(start);
+	vertices.push_back(0.5f * (start + end) + side);
+	vertices.push_back(end);
+
+	vertices.push_back(start);
+	vertices.push_back(0.5f * (start + end) - side);
+	vertices.push_back(end);
+
+
+	// Indices
+	for (int i = 0; i < 6; i++) {
+	    indices.push_back(offset + i);
+	}
+	
+	// UVS
+	uvs.push_back(glm::vec2(0, 0.5));
+	uvs.push_back(glm::vec2(0.5, 0));
+	uvs.push_back(glm::vec2(1, 0.5));
+	uvs.push_back(glm::vec2(0, 0.5));
+	uvs.push_back(glm::vec2(0.5, 1));
+	uvs.push_back(glm::vec2(1, 0.5));
+
+	// normals
+	glm::vec3 normal = glm::normalize(glm::cross(side, dir));
+	for (int i = 0; i < 4; i++) {
+	    normals.push_back(normal);
+	}
 }
 
 

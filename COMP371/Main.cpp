@@ -391,6 +391,10 @@ void initGl() {
     item.clear(3);
     item.setShaderProgram(GlUtilities::loadShaders("tex_vertex", "tex_fragment"));
     item.setTexture("trunc");
+
+    Item leaves(3);
+    leaves.setShaderProgram(GlUtilities::loadShaders("tex_vertex", "tex_fragment"));
+    leaves.setTexture("leaf");
     
      
     for (int i = 0; i < TR_NUM; i++) {
@@ -399,24 +403,38 @@ void initGl() {
 	if (position == glm::vec3(0)) continue;
 	position.y -= 0.01;
 
-	LSystem lsystem;
+	LSystem lsystem(1.0f, 0.2, PI / 4.0f);
 	lsystem.generate(TR_ITERATIONS);
 
-	item.recycle(3);
-	std::vector<glm::vec3> vertices;
-	std::vector<unsigned int> indices;
-	std::vector<glm::vec2> uvs;
-	std::vector<glm::vec3> normals;
-	lsystem.getBark(vertices, indices, uvs, normals);
+	std::vector<glm::vec3> vertices, l_vertices;
+	std::vector<unsigned int> indices, l_indices;
+	std::vector<glm::vec2> uvs, l_uvs;
+	std::vector<glm::vec3> normals, l_normals;
 
+
+	lsystem.getTree(vertices, indices, uvs, normals, l_vertices, l_indices, l_uvs, l_normals);
+
+	// Bark
+	item.recycle(3);
 	item.setGeometry(vertices);
 	item.setTopology(indices);
 	item.setUVs(uvs);
 	item.setNormals(normals);
 	model_matrix = glm::translate(IDENTITY, position);
 	item.setModelMatrix(model_matrix);
-
 	items.push_back(item);
+
+	// Leaves
+	leaves.recycle(3);
+	leaves.setGeometry(l_vertices);
+	leaves.setTopology(l_indices);
+	leaves.setUVs(l_uvs);
+	leaves.setNormals(l_normals);
+	leaves.vao.setPrimitive(VertexArrayObject::TRIANGLES);
+	leaves.setModelMatrix(model_matrix);
+	leaves.type = -1;
+	items.push_back(leaves);
+
     }
 
 }
@@ -459,6 +477,7 @@ void drawGl() {
 	} else {
 	    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
+	
 	items[i].draw();
     }
 }
