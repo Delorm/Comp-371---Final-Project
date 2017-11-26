@@ -60,8 +60,8 @@ const float TR_LENGTH = 1.0f;	    // Initial Trunc Length
 const float TR_RADIUS = 0.2;	    // Trunc Radius
 
 // Fog
-const float FOG_DENSITY = 0.04;
-const float FOG_GRADIENT = 1.0;
+const float FOG_DENSITY = 0.0145;
+const float FOG_GRADIENT = 3.0;
 
 
 // Constant Variables
@@ -93,12 +93,12 @@ int frames_counter = 0;
 int skybox_index;
 float mov_speed = WALK_SPEED;
 float light_angle = 45.0f;
-float fog_density = 0.0f;
-float fog_gradient = 1.0f;
+float fog_density = FOG_DENSITY;
+float fog_gradient = FOG_GRADIENT;
 float one_sec_counter = 0.0f;
 float delta_time = 0.0f;
 float skybox_theta = 0.0f;
-bool fog = false;
+bool fog = true;
 bool free_look = false;
 bool wireframe = false; 
 bool close_window = false;
