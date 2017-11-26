@@ -40,6 +40,7 @@ const float MOUSE_SENSITIVITY = 0.1f;
 const float CHAR_HEIGHT = 1.0f;
 const float WALK_SPEED = 5.0f;
 const float FLY_SPEED = 50.0f;
+const float PI = 3.14159265359f;
 
 // Terrian
 const int T_WIDTH = 128;
@@ -53,8 +54,14 @@ const int R_NUMBER = 100;
 const int R_MAX_RADIUS = 3;
 const int R_POINTS = 20;
 
+// Tress
+const int TR_NUM = 30;
+const int TR_ITERATIONS = 5;
+const float TR_ALPHA = PI / 4;
+const float TR_LENGTH = 1.0f;
+const float TR_RADIUS = 0.2;
+
 // Constant Variables
-const float PI = 3.14159265359f;
 const float BACKGROUND_COLOR = 0.4f; 
 const float PROJ_NEAR_PLANE = 0.1f;
 const float PROJ_FAR_PLANE = 2000.0f;
@@ -65,6 +72,7 @@ const glm::vec3 ORIGIN = glm::vec3(0.0f);
 const float EPSILON = 0.01f;
 const int TYPE_CONVEX_HULL = 0;
 const int TYPE_SKY_BOX = 1;
+const int TYPE_LEAVES = 2;
 
 // Global Variables
 GLFWwindow* window;
@@ -215,6 +223,7 @@ void processInput() {
 			items[i].vao.visibility = !items[i].vao.visibility;
 		    }
 		} 
+		break;
 	    }
 
 	}
@@ -254,49 +263,6 @@ void initGl() {
     item.setModelMatrix(model_matrix);
     items.push_back(item);
     
-    
-    // Trees
-    int num_of_trees = 10;
-    Item volume(1);
-    volume.setShaderProgram(GlUtilities::loadShaders("vertex", "fragment"));
-    volume.vao.setVisibility(false);
-    
-
-    for (int i = 0; i < num_of_trees; i++) {
-
-	item.clear(3);
-	item.loadObject("tree");
-	item.setShaderProgram(GlUtilities::loadShaders("tex_vertex", "tex_fragment"));
-	item.setTexture("trunc");
-
-	std::vector<glm::vec3> vertices = item.vertices;;
-	std::vector<unsigned int> indices;
-	std::vector<glm::vec3> normals;
-	GlUtilities::convexHull(vertices, indices, normals);
-	item.vertices = vertices;
-	item.edges = indices;
-
-	glm::vec3 position = findValidPosition();
-	if (position == glm::vec3(0)) continue;
-
-	float rad = rand() / RAND_MAX * 2 * PI;
-	model_matrix = glm::rotate(IDENTITY, rad, up);
-	model_matrix = glm::translate(model_matrix, position);
-	item.setModelMatrix(model_matrix);
-	item.setCollidable(true);
-	item.position = position;
-	items.push_back(item);
-
-
-	// Bounding Volume
-	volume.setGeometry(vertices);
-	volume.setTopology(indices);
-	volume.setModelMatrix(model_matrix);
-	volume.type = TYPE_CONVEX_HULL;
-	items.push_back(volume);
-    }
-    
-
 
     // Fern
     item.clear(3);
@@ -307,14 +273,6 @@ void initGl() {
     item.setTexture("fern");
     items.push_back(item);
 
-    // Tree
-    item.clear(3);
-    item.loadObject("tree");
-    model_matrix = glm::translate(IDENTITY, glm::vec3(16, 4, 0));
-    item.setModelMatrix(model_matrix);
-    item.setShaderProgram(GlUtilities::loadShaders("tex_vertex", "tex_fragment"));
-    item.setTexture("tree");
-    items.push_back(item);
 
     // Grass
     glm::mat4 trans;
@@ -344,7 +302,10 @@ void initGl() {
     item.setNumOfTexture(2);
     item.setTexture("rocky", "ourTexture1", GL_LINEAR);
     item.setTexture("rock_nor", "nor_map", GL_LINEAR);
-    items.push_back(item);
+
+    Item volume(1);		// Bounding Volume
+    volume.setShaderProgram(GlUtilities::loadShaders("vertex", "fragment"));
+
     for (int i = 0; i < R_NUMBER; i++) {
 
 	glm::vec3 position = findValidPosition();	
@@ -365,9 +326,20 @@ void initGl() {
 
 	model_matrix = glm::translate(IDENTITY, position);
 	item.setModelMatrix(model_matrix);
-	item.setCollidable(true);
 	items.push_back(item);
 
+	// Bounding Volume
+	volume.clear(1);
+	GlUtilities::convexHull(vertices, indices, normals);
+	volume.vao.setVisibility(false);
+	volume.setGeometry(vertices);
+	volume.setTopology(indices);
+	volume.normals = normals;
+	volume.setModelMatrix(model_matrix);
+	volume.type = TYPE_CONVEX_HULL;
+	volume.position = position;
+	volume.setCollidable(true);
+	items.push_back(volume);
     }
     item.setCollidable(false);
 
@@ -385,17 +357,17 @@ void initGl() {
 
 
 
-    // Test L-System
-    const int TR_NUM = 10;
-    const int TR_ITERATIONS = 5;
-    item.clear(3);
+    // L-System
+    item.clear(3);		// Bark
     item.setShaderProgram(GlUtilities::loadShaders("tex_vertex", "tex_fragment"));
     item.setTexture("trunc");
 
-    Item leaves(3);
+    Item leaves(3);		// Leaves
     leaves.setShaderProgram(GlUtilities::loadShaders("tex_vertex", "tex_fragment"));
     leaves.setTexture("leaf");
     
+    volume.clear(1);		// Bounding Volume
+    volume.setShaderProgram(GlUtilities::loadShaders("vertex", "fragment"));
      
     for (int i = 0; i < TR_NUM; i++) {
 
@@ -403,8 +375,6 @@ void initGl() {
 	if (position == glm::vec3(0)) continue;
 	position.y -= 0.01;
 
-	LSystem lsystem(1.0f, 0.2, PI / 4.0f);
-	lsystem.generate(TR_ITERATIONS);
 
 	std::vector<glm::vec3> vertices, l_vertices;
 	std::vector<unsigned int> indices, l_indices;
@@ -412,6 +382,10 @@ void initGl() {
 	std::vector<glm::vec3> normals, l_normals;
 
 
+	// Randomness
+	float random = (float)rand() / RAND_MAX;
+	LSystem lsystem(random * TR_LENGTH, random * TR_RADIUS, max(random * TR_ALPHA, PI/6.0f));
+	lsystem.generate(TR_ITERATIONS);
 	lsystem.getTree(vertices, indices, uvs, normals, l_vertices, l_indices, l_uvs, l_normals);
 
 	// Bark
@@ -424,6 +398,20 @@ void initGl() {
 	item.setModelMatrix(model_matrix);
 	items.push_back(item);
 
+	// Bounding Volume
+	volume.clear(1);
+	GlUtilities::convexHull(vertices, indices, normals);
+	volume.vao.setVisibility(false);
+	volume.setGeometry(vertices);
+	volume.setTopology(indices);
+	volume.normals = normals;
+	volume.setModelMatrix(model_matrix);
+	volume.type = TYPE_CONVEX_HULL;
+	volume.position = position;
+	volume.setCollidable(true);
+	items.push_back(volume);
+
+	
 	// Leaves
 	leaves.recycle(3);
 	leaves.setGeometry(l_vertices);
@@ -432,9 +420,13 @@ void initGl() {
 	leaves.setNormals(l_normals);
 	leaves.vao.setPrimitive(VertexArrayObject::TRIANGLES);
 	leaves.setModelMatrix(model_matrix);
-	leaves.type = -1;
+	leaves.type = TYPE_LEAVES;
 	items.push_back(leaves);
+	
 
+	// Clear Memory
+	vertices.clear(); indices.clear(); uvs.clear(); normals.clear();
+	l_vertices.clear(); l_indices.clear(); l_uvs.clear(); l_normals.clear();
     }
 
 }
@@ -606,9 +598,9 @@ bool validMove(glm::vec3 step) {
     for (int i = 0; i < items.size(); i++) {
 	Item item = items[i];
 	if (item.isCollidable()) {
+
 	    //Spherical Bounding Volume
 	    if (glm::distance(eye, item.position) > R_MAX_RADIUS * 2) continue;	
-
 
 	    std::vector<glm::vec3> vertices = item.vertices;
 	    std::vector<unsigned int> indices = item.edges;

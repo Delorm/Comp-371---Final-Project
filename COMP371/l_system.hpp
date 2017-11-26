@@ -64,10 +64,10 @@ class LSystem {
 	string message;
 	const float PI = 3.14159265359f;
 	float alpha = PI / 4.0f;
-	float random = 0.1;
-	float points = 10;
-	float l_width = 0.2f;
-	float l_height = 0.3f;
+	float random = 0.5;
+	float points = 5;
+	float l_width = 0.07f;
+	float l_height = 0.4f;
 	float radius;
 	float seg_length;
 

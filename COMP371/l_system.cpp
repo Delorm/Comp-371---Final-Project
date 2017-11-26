@@ -203,7 +203,7 @@ void LSystem::drawBark(
     glm::mat4 model_matrix = glm::mat4(1.0f);
     model_matrix = translate(model_matrix, pos); 
 
-    if (dot(dir, up) < 0.9) {
+    if (dot(dir, up) < 0.99) {
 	float angle = acos(glm::dot(up, dir));
 	glm::vec3 rot_axis = glm::normalize(glm::cross(up, dir));
 	model_matrix = rotate(model_matrix, angle, rot_axis);
@@ -263,14 +263,14 @@ void LSystem::drawLeaves(
 	std::vector<glm::vec2> & uvs, 
 	std::vector<glm::vec3> & normals) {
 
-
-
-
 	int offset = vertices.size();
+	float random = (float)rand() / RAND_MAX;
+	float width = random * l_width;
+	float height = random * l_height;
 
 	// Vertices
-	glm::vec3 end = start + l_height * dir;
-	glm::vec3 side = l_width * glm::normalize(glm::cross(end - start, glm::vec3(0, 1, 0))); 
+	glm::vec3 end = start + height * dir;
+	glm::vec3 side = width * glm::normalize(glm::cross(end - start, glm::vec3(0, 1, 0))); 
 
 	vertices.push_back(start);
 	vertices.push_back(0.5f * (start + end) + side);

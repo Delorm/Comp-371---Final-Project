@@ -27,11 +27,11 @@ void main()
 
     // Diffuse
     float strength = max(dot(-light_dir, pix_normal), 0);
-    float kd = 0.6f;
+    float kd = 0.4f;
     color_strength +=  kd * strength;
 
     // Specular
-    float a = 10;
+    float a = 8;
     float ks = 0.2;
     vec3 reflection_vector = reflect(-light_dir, pix_normal);
     float prod = max(dot(view_vector, reflection_vector) , 0);
