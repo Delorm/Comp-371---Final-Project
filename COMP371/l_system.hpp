@@ -66,7 +66,7 @@ class LSystem {
 	float alpha = PI / 4.0f;
 	float random = 0.5;
 	float points = 5;
-	float l_width = 0.2f;
+	float l_width = 0.1f;
 	float l_height = 0.4f;
 	float radius;
 	float seg_length;

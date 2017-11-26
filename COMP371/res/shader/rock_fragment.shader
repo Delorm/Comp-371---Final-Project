@@ -27,10 +27,12 @@ void main()
     if (dot_prod < 0) {
 	dim += dot_prod;
     }
+    // Texture is too bright
+    dim -= 0.2;
 
 
     // Ambience
-    float ka = 0.2;
+    float ka = 0.1;
     color_strength += ka;
 
     // Diffuse

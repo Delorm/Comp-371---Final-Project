@@ -29,17 +29,17 @@ void main()
     }
 
     // Ambience
-    float ka = 0.2;
+    float ka = 0.1;
     color_strength += ka;
 
     // Diffuse
     float strength = max(dot(-light_dir, pix_normal), 0);
-    float kd = 0.4f;
+    float kd = 0.2f;
     color_strength +=  dim * kd * strength;
 
     // Specular
-    float a = 8;
-    float ks = 0.2;
+    float a = 5;
+    float ks = 0.8;
     vec3 reflection_vector = reflect(-light_dir, pix_normal);
     float prod = max(dot(view_vector, reflection_vector) , 0);
     strength = pow(prod, a);

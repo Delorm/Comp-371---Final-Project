@@ -283,13 +283,16 @@ void initGl() {
     // Fern
     item.clear(3);
     item.loadObject("fern");
-    model_matrix = glm::translate(IDENTITY, glm::vec3(32, 4, 0));
+    float fern_scalar = 0.5f;
+    model_matrix = glm::translate(IDENTITY, glm::vec3(5, mapHeight(5,0), 0));
+    model_matrix = glm::scale(model_matrix, glm::vec3(fern_scalar));
     item.setModelMatrix(model_matrix);
     item.setShaderProgram(GlUtilities::loadShaders("tex_vertex", "tex_fragment"));
     item.setTexture("fern");
     items.push_back(item);
 
 
+    /*
     // Grass
     glm::mat4 trans;
     trans = glm::rotate(trans, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -300,6 +303,7 @@ void initGl() {
     item.setShaderProgram(GlUtilities::loadShaders("tex_vertex", "tex_fragment"));
     item.setTexture("grassTexture");
     items.push_back(item);
+    */
     
     // Water plane
     /*
@@ -744,7 +748,7 @@ glm::vec3 findValidPosition() {
 
     // Under Water Rejection
     if (y_loc < 0) {
-	return glm::vec3(0);
+//	return glm::vec3(0);
     }	
 
     // Center Spawn Rejection
