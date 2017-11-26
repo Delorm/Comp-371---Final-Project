@@ -285,7 +285,6 @@ void initGl() {
     item.setTexture("grassTexture");
     items.push_back(item);
     
-    
     // Water plane
     item.clear(1);
     item.loadObject("water");

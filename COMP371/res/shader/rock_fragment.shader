@@ -20,6 +20,13 @@ void main()
 
     float color_strength = 0.0f;
 
+    float dim = 1; 
+    float dot_prod = dot(-light_dir, vec3(0, 1, 0));
+    if (dot_prod < 0) {
+	dim += dot_prod;
+    }
+
+
     // Ambience
     float ka = 0.2;
     color_strength += ka;
@@ -27,7 +34,7 @@ void main()
     // Diffuse
     float strength = max(dot(-light_dir, normal), 0);
     float kd = 0.6f;
-    color_strength +=  kd * strength;
+    color_strength +=  dim * kd * strength;
 
     // Specular
     float a = 1;
@@ -35,7 +42,7 @@ void main()
     vec3 reflection_vector = reflect(-light_dir, normal);
     float prod = max(dot(view_vector, reflection_vector) , 0);
     strength = pow(prod, a);
-    color_strength += ks * strength;
+    color_strength += dim * ks * strength;
 
     color = color_strength * object_color;
     color = clamp(color, 0.0f, 1.0f);

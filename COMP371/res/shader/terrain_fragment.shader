@@ -28,6 +28,12 @@ void main()
     vec4 object_color = back_color + r_color + g_color + b_color;
 
     float color_strength = 0.0f;
+    float dim = 1; 
+    float dot_prod = dot(-light_dir, vec3(0, 1, 0));
+    if (dot_prod < 0) {
+	dim -= abs(dot_prod);
+    }
+
 
     // Ambience
     float ka = 0.2;
@@ -36,7 +42,7 @@ void main()
     // Diffuse
     float diffuse_strength = max(dot(-light_dir, normal), 0);
     float kd = 0.2f;
-    color_strength +=  (kd * diffuse_strength);
+    color_strength +=  dim * kd * diffuse_strength;
 
     // Specular
 
@@ -45,7 +51,7 @@ void main()
     vec3 reflection_vector = reflect(-light_dir, normal);
     float prod = max(dot(view_vector, reflection_vector) , 0);
     float specular_strength = pow(prod, a);  
-    color_strength += (ks * specular_strength);
+    color_strength += dim * ks * specular_strength;
 
     color = vec4(color_strength * object_color.xyz, 1);
 } 
