@@ -26,7 +26,7 @@ std::vector<glm::vec3> Terrian::generateMap() {
     return vertices;
 }
 
-float Terrian::getHeight(float x, float z) {
+float Terrian::getHeight(float x, float z) {		// Query Height for character movement
 
     float total = getInterpolatedNoise(x / 8.0f, z / 8.0f) * max;
     total += getInterpolatedNoise(x / 4.0f, z / 4.0f) * (max / 3.0f);
@@ -36,7 +36,7 @@ float Terrian::getHeight(float x, float z) {
     return total + shift;
 }
 
-float Terrian::calcNoise(int x, int z) {
+float Terrian::calcNoise(int x, int z) {		// Ranodom Noise [-1, +1]
     srand(x * X_MULT + z * Z_MULT + seed);
     float y = ((float)rand() / RAND_MAX * 2) - 1;
 
@@ -56,7 +56,7 @@ float Terrian::getNoise(int x, int z) {
 }
 
 
-float Terrian::calcSmoothNoise(int x, int z) {
+float Terrian::calcSmoothNoise(int x, int z) {		// Weighted Average
     float corners = (Terrian::getNoise(x-1, z-1) + Terrian::getNoise(x-1, z+1) + Terrian::getNoise(x+1, z-1) + Terrian::getNoise(x+1, z+1)) / 16.0f;
     float sides = (Terrian::getNoise(x-1, z) + Terrian::getNoise(x+1, z) + Terrian::getNoise(x, z-1) + Terrian::getNoise(x, z+1)) / 8.0f;
     float center = Terrian::getNoise(x, z) / 4.0f;
@@ -70,13 +70,13 @@ float Terrian::getSmoothNoise(int x, int z) {
     return smooth_noise_map[x][z];
 }
 
-float Terrian::interpolate(float a, float b, float blend) {
+float Terrian::interpolate(float a, float b, float blend) { // Linear Interpolation
     float theta = blend * pi;
     float f = (1.0f - cos(theta)) * 0.5f;
     return a * (1.0f - f) + b * f;
 }
 
-float Terrian::getInterpolatedNoise(float x, float z) {
+float Terrian::getInterpolatedNoise(float x, float z) {	    // Calls the upper functions
     int int_x = (int)x;
     int int_z = (int)z;
     float frac_x = x - int_x;
@@ -143,7 +143,7 @@ void Terrian::preCalculateMaps() {
     }
 }
 
-std::vector<glm::vec2> Terrian::generateUVs() {
+std::vector<glm::vec2> Terrian::generateUVs() {	    // Based on x,z
 
     std::vector<glm::vec2> uvs;
     std::vector<glm::vec3> map = generateMap();
@@ -153,7 +153,7 @@ std::vector<glm::vec2> Terrian::generateUVs() {
     return uvs;
 }
 
-std::vector<glm::vec3> Terrian::generateNormals() {
+std::vector<glm::vec3> Terrian::generateNormals() { // Per face
 
     std::vector<glm::vec3> map = generateMap();
     std::vector<GLuint> indices = findIndices();
