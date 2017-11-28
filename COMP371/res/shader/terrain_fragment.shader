@@ -1,11 +1,14 @@
 #version 330 core
 
 in vec2 tex_coord;
+in vec4 shadow_coord;
 in vec3 light_dir;
 in vec3 pix_normal;
 in vec3 view_vector;
 
 out vec4 color;
+
+
 in float visibility;
 uniform vec3 skyColor;
 
@@ -15,6 +18,7 @@ uniform sampler2D g_texture;
 uniform sampler2D b_texture;
 uniform sampler2D blend_map;
 uniform sampler2D nor_map;
+uniform sampler2D shadow_map;
 
 void main()
 {
@@ -35,21 +39,34 @@ void main()
     if (dot_prod < 0) {
 	dim -= abs(dot_prod);
     }
+    
+    bool in_shadow = false;
+    float nearest_distance = texture(shadow_map, shadow_coord.xy).r;
+    float x = shadow_coord.x;
+    float y = shadow_coord.y;
+    float z = shadow_coord.z;
+
+    if (z > nearest_distance) {
+	in_shadow = true;
+    }
+    if (x < 0 || x > 1 || y < 0 || y > 1) {
+	in_shadow = false;
+    }
+    if (in_shadow) dim = 0;
 
 
     // Ambience
-    float ka = 0.1;
+    float ka = 0.2;
     color_strength += ka;
 
     // Diffuse
     float diffuse_strength = max(dot(-light_dir, normal), 0);
-    float kd = 0.2f;
+    float kd = 0.3f;
     color_strength +=  dim * kd * diffuse_strength;
 
     // Specular
-
-    float a = 20.0;
-    float ks = 0.6;
+    float a = 10.0;
+    float ks = 0.3;
     vec3 reflection_vector = reflect(-light_dir, normal);
     float prod = max(dot(view_vector, reflection_vector) , 0);
     float specular_strength = pow(prod, a);  
@@ -57,6 +74,5 @@ void main()
 
     color = vec4(color_strength * object_color.xyz, 1);
     color = mix(vec4(skyColor, 1.0f), color, visibility);
-
 
 } 

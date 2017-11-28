@@ -13,7 +13,7 @@ void Item::setEyeLocation(glm::vec4 & loc) {
     VertexArrayObject::setEyeLocation(loc);
 }
 
-void Item::loadObject(char* path) {
+void Item::loadObject(char* path) {		    // Also creates the Vao
     char full_path [30] = "";
     strcat(full_path, "res/obj/");
     strcat(full_path, path);
@@ -29,12 +29,12 @@ void Item::loadObject(char* path) {
     vao.setNormals(normals);
 }
 
-void Item::setGeometry(std::vector<glm::vec3> vertices) {
+void Item::setGeometry(std::vector<glm::vec3> vertices) {   // Vertices
     this->vertices = vertices;
     vao.setGeometry(vertices);
 }
 
-void Item::setTopology(std::vector<unsigned int> edges) {
+void Item::setTopology(std::vector<unsigned int> edges) {   // Indices
     this->edges = edges;
     vao.setTopology(edges);
     vao.setDrawingMode(VertexArrayObject::ELEMENTS);
@@ -53,9 +53,9 @@ void Item::setColors(std::vector<glm::vec3> colors) {
     vao.setColors(colors);
 }
 
-void Item::setTexture(char* texture_name) {
-    setTexture(texture_name, "ourTexture1", GL_LINEAR);
-}
+void Item::setTexture(char* texture_name) {		    
+    setTexture(texture_name, "ourTexture1", GL_LINEAR_MIPMAP_LINEAR);
+}   
 
 void Item::setTexture(char* texture_name, char* sampler_name, int interpolation_mode) {
     char full_path [30] = "";
@@ -82,7 +82,7 @@ void Item::draw() {
     vao.draw();
 }
 
-void Item::recycle(int num_vbos) {
+void Item::recycle(int num_vbos) {		// Clear item but keep texture
     vao.recycle(num_vbos);
     vertices.clear();
     edges.clear();
@@ -92,16 +92,17 @@ void Item::recycle(int num_vbos) {
     collidable = false;
 }
 
-void Item::clear(int num_vbos) {
+void Item::clear(int num_vbos) {		// Recycle and remove texture
     recycle(num_vbos);
     vao.clear(num_vbos);
+    type = -1;
 }
 
 std::vector<glm::vec3> & Item::getVertices() {
     return vertices;
 }
 
-void Item::setCollidable(bool collide) {
+void Item::setCollidable(bool collide) {	// Converts Normas and vertices to world space
 
     if (collide) {
 	std::vector<glm::vec3> temp;
@@ -114,7 +115,7 @@ void Item::setCollidable(bool collide) {
 	temp.clear();
 
 	normals.clear();
-	d_coeff.clear();
+	d_coeff.clear();			// Pre calc plane equation(Optimization)
 	for (int i = 0; i < edges.size(); i += 3) {
 	    glm::vec3 p0 = vertices[edges[i+0]];
 	    glm::vec3 p1 = vertices[edges[i+1]];

@@ -20,6 +20,7 @@
 #include "time.h"
 #include "set"
 #include "l_system.hpp"
+#include "frame_buffer_object.hpp"
 
 #ifdef __linux__ 
     //linux code goes here
@@ -44,16 +45,16 @@ const float PI = 3.14159265359f;
 const int T_WIDTH = 128;
 const int T_HEIGHT = 128;
 const int T_MAX = 10.0f;	    // Highest & Lowest point in terrian
-const int T_SHIFT = 2;		    // Increases land to water ratio
+const int T_SHIFT = 1;		    // Increases land to water ratio
 const int T_LAND = 10;		    // Radius of Land in the center
 
 // Rocks
-const int R_NUMBER = 100;	    // Number of Rocks
+const int R_NUMBER = 30;	    // Number of Rocks
 const int R_MAX_RADIUS = 3;	    // Max Radius of Rock
 const int R_POINTS = 20;	    // Number of points(resolution)
 
 // Tress
-const int TR_NUM = 30;		    // Total Number of Trees
+const int TR_NUM = 60;		    // Total Number of Trees
 const int TR_ITERATIONS = 5;	    // L-System Iterations
 const float TR_ALPHA = PI / 4;	    // Branching Angle
 const float TR_LENGTH = 1.0f;	    // Initial Trunc Length
@@ -73,9 +74,15 @@ const GLuint INITIAL_HEIGHT = 720;
 const glm::mat4 IDENTITY = glm::mat4(1.0f);
 const glm::vec3 ORIGIN = glm::vec3(0.0f);
 const float EPSILON = 0.01f;
-const int TYPE_CONVEX_HULL = 0;	    // Numeric Types
-const int TYPE_SKY_BOX = 1;
-const int TYPE_LEAVES = 2;
+const float WATER_SPEED	    = 0.05f;
+
+// Numeric Types
+const int TYPE_CONVEX_HULL  = 0;	    
+const int TYPE_SKY_BOX	    = 1;
+const int TYPE_LEAVES	    = 2;
+const int TYPE_WATER	    = 3;
+const int TYPE_GUI	    = 4;
+const int TYPE_TERRAIN	    = 5;
 
 // Global Variables
 GLFWwindow* window;
@@ -91,6 +98,8 @@ timeval last_time;		// Timekeeping variables
 timeval current_time;
 int frames_counter = 0;
 int skybox_index;
+int last_width = INITIAL_WIDTH;
+int last_height = INITIAL_HEIGHT;
 float mov_speed = WALK_SPEED;
 float light_angle = 45.0f;
 float fog_density = FOG_DENSITY;
@@ -103,18 +112,19 @@ bool free_look = false;
 bool wireframe = false; 
 bool close_window = false;
 bool light_mov = true;
+FrameBufferObject fbo;
+float water_offset = 0;
 
 
 // Prototypes definition
-void initGl(void);
-void drawGl(void);
+void initGl(void);				    // Called Once
+void drawGl(void);				    // Game Loop
 void keyCallback(GLFWwindow*, int, int, int, int);
 void registerCallbacks(GLFWwindow*);
 void windowSizeCallback(GLFWwindow*, int, int); 
-float mapHeight(float, float); 
-glm::mat4 setCameraPosition(void);
-std::vector<GLuint> findIndices(int width, int height); 
-bool validMove(glm::vec3);
+float mapHeight(float, float);			    // Returns Height at a particular x,z 
+glm::mat4 setCameraPosition(bool);
+bool validMove(glm::vec3);			    // Collision & Water Detection
 void move(glm::vec3);
 void processInput(void);
 void getTimeNow(timeval &);
@@ -123,8 +133,9 @@ float angle(glm::vec3, glm::vec3, glm::vec3);
 void printVector(glm::vec3);
 void printVector(char*, glm::vec3); 
 void addItem(glm::vec3);
+void setCursorToMiddle(void);
 bool checkInsideTriangle(std::vector<glm::vec3>, glm::vec3);
-glm::vec3 findValidPosition(void);
+glm::vec3 findValidPosition(bool);		    // Returns a random valid position on Map
 
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mode) {
@@ -142,11 +153,11 @@ void processInput() {
 
 	int key = *it;
 	switch (key) {
-	    case GLFW_KEY_ESCAPE:
+	    case GLFW_KEY_ESCAPE:		// Closes Window
 		close_window = true;
 		break;
 
-	    case GLFW_KEY_W: {
+	    case GLFW_KEY_W: {			// Movement
 		glm::vec3 direction = glm::normalize(center - eye);
 		move(direction);
 		break;
@@ -172,13 +183,13 @@ void processInput() {
 		break;
 	    }
 
-	    case GLFW_KEY_V: {
+	    case GLFW_KEY_V: {			// Freelook On/Off
 		key_set.erase(key); free_look = !free_look;
 		mov_speed = (free_look == false) ? WALK_SPEED : FLY_SPEED;
 		break;
 	    }
 
-	    case GLFW_KEY_T: {
+	    case GLFW_KEY_T: {			// Wireframe Triangles
 		key_set.erase(key);
 		wireframe = !wireframe;
 		if (wireframe) {
@@ -189,13 +200,13 @@ void processInput() {
 		break;
 	    }
 
-	    case GLFW_KEY_P: {
+	    case GLFW_KEY_P: {			// Pause Time & Sun Movement
 		key_set.erase(key);
 		light_mov = !light_mov;
 		break;
 	    }
 
-	    case GLFW_KEY_1: {
+	    case GLFW_KEY_1: {			// Predefined Times of day
 		light_mov = false;
 		light_angle = 350.0f;
 		break;
@@ -219,7 +230,7 @@ void processInput() {
 		break;
 	    }
 
-	    case GLFW_KEY_C: {
+	    case GLFW_KEY_C: {			// Display Hitboxes 
 		key_set.erase(key);
 		for (int i = 0; i < items.size(); i++) {
 		    if (items[i].type == TYPE_CONVEX_HULL) {
@@ -229,7 +240,7 @@ void processInput() {
 		break;
 	    }
 
-	    case GLFW_KEY_F: {
+	    case GLFW_KEY_F: {			// Fog On/Off
 		key_set.erase(key);
 		fog = !fog;
 		if (fog) {
@@ -255,6 +266,11 @@ void initGl() {
     VertexArrayObject::setProjectionMatrix(projection_matrix);
     glm::mat4 model_matrix = IDENTITY;
 
+    // Frame Buffer
+    fbo.createReflectionFrameBuffer(last_width, last_height);
+    fbo.createRefractionFrameBuffer(last_width, last_height);
+    fbo.createShadowMapFrameBuffer(last_width, last_height);
+
     // Terrain
     Item item(3);
 
@@ -263,17 +279,19 @@ void initGl() {
     item.setTopology(terrian.findIndices());
     item.setUVs(terrian.generateUVs());
     item.setNormals(terrian.generateNormals());
+    item.type = TYPE_TERRAIN;
 
     // Texture
-    item.setNumOfTexture(7);
+    item.setNumOfTexture(8);
     item.setShaderProgram(GlUtilities::loadShaders("terrain_vertex", "terrain_fragment"));
-    item.setTexture("grass", "grass", GL_LINEAR);
-    item.setTexture("terrain_background", "background", GL_LINEAR);
-    item.setTexture("terrain_r", "r_texture", GL_LINEAR);
-    item.setTexture("terrain_g", "g_texture", GL_LINEAR);
-    item.setTexture("terrain_b", "b_texture", GL_LINEAR);
-    item.setTexture("blend_map", "blend_map", GL_LINEAR);
-    item.setTexture("normal_map", "nor_map", GL_LINEAR);
+    item.setTexture("grass", "grass", GL_LINEAR_MIPMAP_LINEAR);
+    item.setTexture("terrain_background", "background", GL_LINEAR_MIPMAP_LINEAR);
+    item.setTexture("terrain_r", "r_texture", GL_LINEAR_MIPMAP_LINEAR);
+    item.setTexture("terrain_g", "g_texture", GL_LINEAR_MIPMAP_LINEAR);
+    item.setTexture("terrain_b", "b_texture", GL_LINEAR_MIPMAP_LINEAR);
+    item.setTexture("blend_map", "blend_map", GL_LINEAR_MIPMAP_LINEAR);
+    item.setTexture("normal_map", "nor_map", GL_LINEAR_MIPMAP_LINEAR);
+    item.vao.setTexture(fbo.shadow_map_texture_id, "shadow_map", GL_LINEAR);
 
     model_matrix = glm::translate(IDENTITY, glm::vec3( (float)-T_WIDTH / 2.0f, 0.0f, (float)-T_HEIGHT / 2.0f));
     item.setModelMatrix(model_matrix);
@@ -292,52 +310,31 @@ void initGl() {
     items.push_back(item);
 
 
-    /*
-    // Grass
-    glm::mat4 trans;
-    trans = glm::rotate(trans, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    item.clear(3);
-    item.loadObject("grassModel");
-    model_matrix = glm::translate(IDENTITY, glm::vec3(2, 2, 0));
-    item.setModelMatrix(model_matrix);
-    item.setShaderProgram(GlUtilities::loadShaders("tex_vertex", "tex_fragment"));
-    item.setTexture("grassTexture");
-    items.push_back(item);
-    */
-    
-    // Water plane
-    /*
-    item.clear(1);
-    item.loadObject("water");
-    model_matrix = glm::scale(IDENTITY, glm::vec3(T_WIDTH, 0, T_HEIGHT));
-    item.setModelMatrix(model_matrix);
-    item.setShaderProgram(GlUtilities::loadShaders("water_vertex", "water_fragment"));
-    item.setTexture("water");
-    items.push_back(item);
-    */
 
     // Random Rocks
     srand(time(NULL));
     item.clear(3);
     item.setShaderProgram(GlUtilities::loadShaders("rock_vertex", "rock_fragment"));
     item.setNumOfTexture(2);
-    item.setTexture("rocky", "ourTexture1", GL_LINEAR);
-    item.setTexture("rock_nor", "nor_map", GL_LINEAR);
+    item.setTexture("rocky", "ourTexture1", GL_LINEAR_MIPMAP_LINEAR);
+    item.setTexture("rock_nor", "nor_map", GL_LINEAR_MIPMAP_LINEAR);
 
     Item volume(1);		// Bounding Volume
     volume.setShaderProgram(GlUtilities::loadShaders("vertex", "fragment"));
 
     for (int i = 0; i < R_NUMBER; i++) {
 
-	glm::vec3 position = findValidPosition();	
+	glm::vec3 position = findValidPosition(true);	
 	if (position == glm::vec3(0)) continue;
 
+	/// Generate Randomally
 	std::vector<glm::vec3> vertices = GlUtilities::genRandomRock(R_MAX_RADIUS, R_POINTS);
 	std::vector<unsigned int> indices;
 	std::vector<glm::vec3> normals;
 	GlUtilities::convexHull(vertices, indices, normals);
 	std::vector<glm::vec2> uvs = GlUtilities::genSphericalUVs(vertices);
 
+	// Setup the VBO
 	item.recycle(3);
 	item.setGeometry(vertices);
 	item.setTopology(indices);
@@ -345,8 +342,10 @@ void initGl() {
 	item.setNormals(normals);
 	item.position = position;
 
+	// Rock Model Matrix
 	model_matrix = glm::translate(IDENTITY, position);
 	item.setModelMatrix(model_matrix);
+	item.type = -1;
 	items.push_back(item);
 
 	// Bounding Volume
@@ -391,7 +390,7 @@ void initGl() {
      
     for (int i = 0; i < TR_NUM; i++) {
 
-	glm::vec3 position = findValidPosition();
+	glm::vec3 position = findValidPosition(false);
 	if (position == glm::vec3(0)) continue;
 	position.y -= 0.01;
 
@@ -416,6 +415,7 @@ void initGl() {
 	item.setNormals(normals);
 	model_matrix = glm::translate(IDENTITY, position);
 	item.setModelMatrix(model_matrix);
+	item.type = -1;
 	items.push_back(item);
 
 	// Bounding Volume
@@ -449,19 +449,40 @@ void initGl() {
 	l_vertices.clear(); l_indices.clear(); l_uvs.clear(); l_normals.clear();
     }
 
+
+    
+
+    // Water plane
+    item.clear(2);
+    item.loadObject("water");
+    model_matrix = glm::scale(IDENTITY, glm::vec3(T_WIDTH / 2, 0, T_HEIGHT / 2));
+    item.setModelMatrix(model_matrix);
+    item.setShaderProgram(GlUtilities::loadShaders("water_vertex", "water_fragment"));
+    item.setNumOfTexture(3);
+    item.vao.setTexture(fbo.reflection_texture_id, "reflection", GL_LINEAR);
+    item.vao.setTexture(fbo.refraction_texture_id, "refraction", GL_LINEAR);
+    item.setTexture("dudv", "dudv", GL_LINEAR);
+    item.type = TYPE_WATER; 
+    items.push_back(item);
+
+
 }
 
-
-void drawGl() {
+glm::mat4 newCameraPosition(bool move) {
 
     // One View Matrix per Iteration
-    glm::mat4 view_matrix = setCameraPosition();
+    glm::mat4 view_matrix = setCameraPosition(move);
     VertexArrayObject::setViewMatrix(view_matrix);
     VertexArrayObject::fog_density = fog_density;
     VertexArrayObject::fog_gradient = fog_gradient;
     glm::vec4 eye4d = glm::vec4(eye.x, eye.y, eye.z, 1.0f);
     Item::setEyeLocation(eye4d);
+    return view_matrix;
+}
 
+void drawGl() {
+
+    newCameraPosition(true);
 
     // Light Direction
     if (light_mov) {
@@ -471,7 +492,6 @@ void drawGl() {
     float light_angle_rad = (light_angle * PI / 180.0f);
     glm::mat4 light_rotation = glm::rotate(IDENTITY, light_angle_rad, glm::vec3(0, 0, 1));
     light_direction = light_rotation * light_direction;
-    Item::setLightDirection(light_direction);
 
     // Fog SkyBlend Color (adjusted with Daytime)
     float bg = BACKGROUND_COLOR;
@@ -488,7 +508,68 @@ void drawGl() {
     model_matrix = glm::rotate(model_matrix, skybox_theta, up);
     items[skybox_index].setModelMatrix(model_matrix);
 
+    // Move Water
+    water_offset += WATER_SPEED * delta_time;
+    VertexArrayObject::water_offset = water_offset;
+
+
+    
+    // Draw to ShadowMap Frame Buffer
+    fbo.bind(fbo.shadowmap_id, fbo.width, fbo.height);
+    glm::vec3 save_eye = eye;
+    glm::vec3 save_center = center;
+    center = eye;
+    eye = eye - (10.0f * glm::vec3(light_direction));
+    glm::mat4 light_view_matrix = newCameraPosition(false);
+    glClearColor(BACKGROUND_COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    Item::setLightDirection(light_direction);
+    for (int i = 0; i < items.size(); i++) {
+	int type = items[i].type;
+	if (type != TYPE_WATER && type != TYPE_GUI && type != TYPE_TERRAIN)
+	    items[i].draw();
+    }
+    fbo.unbind(last_width, last_height);
+    center = save_center;
+    eye = save_eye;
+    newCameraPosition(false);
+
+
+    // Draw to Reflection Frame Buffer
+    glEnable(GL_CLIP_DISTANCE0);
+    VertexArrayObject::clipping_plane = glm::vec4(0, +1, 0, 0);
+    fbo.bind(fbo.reflection_id, fbo.width, fbo.height);
+    eye.y = -eye.y; center.y = -center.y;
+    newCameraPosition(false);
+    glClearColor(BACKGROUND_COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    for (int i = 0; i < items.size(); i++) {
+	if (items[i].type != TYPE_WATER && items[i].type != TYPE_GUI)
+	    items[i].draw();
+    }
+    fbo.unbind(last_width, last_height);
+    eye.y = -eye.y; center.y = -center.y;
+    newCameraPosition(false);
+
+    
+    // Draw to Refraction Frame Buffer
+    glEnable(GL_CLIP_DISTANCE0);
+    VertexArrayObject::clipping_plane = glm::vec4(0, -1, 0, 1);
+    fbo.bind(fbo.refraction_id, fbo.width, fbo.height);
+    glClearColor(BACKGROUND_COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    for (int i = 0; i < items.size(); i++) {
+	if (items[i].type != TYPE_WATER && items[i].type != TYPE_GUI)
+	    items[i].draw();
+    }
+    fbo.unbind(last_width, last_height);
+    
+
+    // Main Frame Buffer
     // Draw All Objects
+    VertexArrayObject::light_v_matrix = glm::mat4(light_view_matrix);
+    setCursorToMiddle();
+    glDisable(GL_CLIP_DISTANCE0);
     for (unsigned int i = 0; i < items.size(); i++) {
 	if (items[i].type == TYPE_CONVEX_HULL) {
 	    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -500,6 +581,7 @@ void drawGl() {
 	
 	items[i].draw();
     }
+    
 }
 
 int main() {
@@ -536,11 +618,19 @@ int main() {
     return 0;
 }
 
+void setCursorToMiddle() {
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+    int screen_center_x = width / 2;
+    int screen_center_y = height / 2;
+    glfwSetCursorPos(window, screen_center_x, screen_center_y);
+}
 
-glm::mat4 setCameraPosition() {
+
+glm::mat4 setCameraPosition(bool move) {
 
     // Get Map Height at eye position to clip the character to ground
-    if (!free_look) {
+    if (!free_look & move) {
 	float old_eye_y = eye.y;
 	eye.y = mapHeight(eye.x, eye.z) + CHAR_HEIGHT;
 	float centerShift = eye.y - old_eye_y;
@@ -553,30 +643,30 @@ glm::mat4 setCameraPosition() {
 
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
-
     int screen_center_x = width / 2;
     int screen_center_y = height / 2;
     glfwSetCursorPos(window, screen_center_x, screen_center_y);
 
-    double mov_x = xpos - screen_center_x;
-    double mov_y = ypos - screen_center_y;
+    if (move) {
+	double mov_x = xpos - screen_center_x;
+	double mov_y = ypos - screen_center_y;
+	glm::mat4 trans = glm::translate(IDENTITY, ORIGIN - (center * 2.0f) + eye);
 
-    glm::mat4 trans = glm::translate(IDENTITY, ORIGIN - (center * 2.0f) + eye);
+	// Horizontal Rotation:
+	float rad = (mov_x * MOUSE_SENSITIVITY) * PI / 180.0f;
+	glm::mat4 rot = glm::rotate(IDENTITY, rad, up);
+	glm::vec4 hom_point = glm::vec4(center, 1.0f);
+	hom_point = -trans * rot * trans * hom_point;
+	center = glm::vec3(hom_point);
 
-    // Horizontal Rotation:
-    float rad = (mov_x * MOUSE_SENSITIVITY) * PI / 180.0f;
-    glm::mat4 rot = glm::rotate(IDENTITY, rad, up);
-    glm::vec4 hom_point = glm::vec4(center, 1.0f);
-    hom_point = -trans * rot * trans * hom_point;
-    center = glm::vec3(hom_point);
-
-    // Vertical Rotation:
-    rad = (mov_y *  MOUSE_SENSITIVITY) * PI / 180.0f;
-    glm::vec3 axis = glm::normalize(cross(up, (center - eye)));
-    rot = glm::rotate(IDENTITY, -rad, axis);
-    hom_point = glm::vec4(center, 1.0f);
-    hom_point = -trans * rot * trans * hom_point;
-    center = glm::vec3(hom_point);
+	// Vertical Rotation:
+	rad = (mov_y *  MOUSE_SENSITIVITY) * PI / 180.0f;
+	glm::vec3 axis = glm::normalize(cross(up, (center - eye)));
+	rot = glm::rotate(IDENTITY, -rad, axis);
+	hom_point = glm::vec4(center, 1.0f);
+	hom_point = -trans * rot * trans * hom_point;
+	center = glm::vec3(hom_point);
+    }
 
     glm::mat4 view_matrix = glm::lookAt(eye, center, up);
     return view_matrix;
@@ -591,6 +681,8 @@ void windowSizeCallback(GLFWwindow* window, int width, int height) {
 
     // Define the new Viewport Dimensions{
     glfwGetFramebufferSize(window, & width, &height);
+    last_width = width;
+    last_height = height;
     glViewport(0, 0, width, height);
     glm::mat4 projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, PROJ_NEAR_PLANE, PROJ_FAR_PLANE);
     VertexArrayObject::setProjectionMatrix(projection_matrix);
@@ -612,7 +704,7 @@ bool validMove(glm::vec3 step) {
     glm::vec3 char_pos = eye - glm::vec3(0, CHAR_HEIGHT, 0);
     glm::vec3 next_pos = char_pos + step;
     if (mapHeight(next_pos.x, next_pos.z) <= 0) {
-	//return false;
+	return false;
     }
 
     // Terrain Size Bounding
@@ -663,7 +755,7 @@ bool validMove(glm::vec3 step) {
     return true;
 }
 
-void move(glm::vec3 direction) {
+void move(glm::vec3 direction) {	    // Move Character in Direction
 
     glm::vec3 step = mov_speed * delta_time * direction;
     if (validMove(step)) {
@@ -672,7 +764,7 @@ void move(glm::vec3 direction) {
     }
 }
 
-void getTimeNow(timeval & time) {
+void getTimeNow(timeval & time) {	    // Cross Platform
 
 #ifdef __linux__ 
 
@@ -687,7 +779,7 @@ void getTimeNow(timeval & time) {
 #endif
 }
 
-void calcDeltaTime() {
+void calcDeltaTime() {			    // In real time
 
     timeval current_time;
     getTimeNow(current_time);
@@ -726,6 +818,7 @@ void addItem(glm::vec3 pos) {
 
 bool checkInsideTriangle(std::vector<glm::vec3> t, glm::vec3 p) {
 
+    // Barycintric Coordinates
     glm::vec3 u1 = t[1] - t[0];
     glm::vec3 u2 = t[2] - t[0];
     float area = glm::length(glm::cross(u1, u2)) / 2.0f;
@@ -740,15 +833,15 @@ bool checkInsideTriangle(std::vector<glm::vec3> t, glm::vec3 p) {
     return false;
 } 
 
-glm::vec3 findValidPosition() {
+glm::vec3 findValidPosition(bool allow_water) {	    // Return Random Valid position for object
 
     int x_loc = (rand() % T_WIDTH) - T_WIDTH / 2.0f;
     int z_loc = (rand() % T_HEIGHT) - T_HEIGHT / 2.0f;
     float y_loc = mapHeight(x_loc, z_loc);
 
     // Under Water Rejection
-    if (y_loc < 0) {
-//	return glm::vec3(0);
+    if (!allow_water && y_loc < 0) {
+	return glm::vec3(0);
     }	
 
     // Center Spawn Rejection

@@ -26,15 +26,15 @@ class LSystem {
 	    string b;
 	};
 	LSystem(float, float, float);
-	void makeRule(string, string);
+	void makeRule(string, string);		// Adds a rule to the grammer
 	string getMessage();
-	void generate(int);
+	void generate(int);			// Takes number of iterations
 	void getTree(
-		std::vector<glm::vec3> &, 
+		std::vector<glm::vec3> &,	// Trunc Vectors
 		std::vector<unsigned int> &, 
 		std::vector<glm::vec2> &, 
 		std::vector<glm::vec3> &, 
-		std::vector<glm::vec3> &, 
+		std::vector<glm::vec3> &,	// Leaves Vectors
 		std::vector<unsigned int> &, 
 		std::vector<glm::vec2> &, 
 		std::vector<glm::vec3> &
@@ -63,12 +63,12 @@ class LSystem {
 	string axiom;
 	string message;
 	const float PI = 3.14159265359f;
-	float alpha = PI / 4.0f;
+	float alpha = PI / 4.0f;	    // Angle of brancing
 	float random = 0.5;
-	float points = 5;
-	float l_width = 0.1f;
-	float l_height = 0.4f;
-	float radius;
+	float points = 5;		    // or sides of cylinder
+	float l_width = 0.1f;		    // Leaf width
+	float l_height = 0.4f;		    // Leaf Height
+	float radius;			    // Bark Initial Radius
 	float seg_length;
 
 

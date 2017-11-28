@@ -29,20 +29,27 @@ using namespace std;
 const char* VertexArrayObject::MVP_SHADER_NAME = "mvp_matrix";
 const char* VertexArrayObject::M_SHADER_NAME   = "m_matrix";
 const char* VertexArrayObject::V_SHADER_NAME   = "v_matrix";
+const char* VertexArrayObject::P_SHADER_NAME   = "p_matrix";
 const char* VertexArrayObject::SKYCOLOR   = "skyColor";
 const char* VertexArrayObject::LIGHT_SHADER_NAME = "light_direction";
 const char* VertexArrayObject::EYE_SHADER_NAME = "eye_location";
 const char* VertexArrayObject::FOG_DENSITY_SHADER_NAME = "density";
 const char* VertexArrayObject::FOG_GRADIENT_SHADER_NAME = "gradient";
+const char* VertexArrayObject::CLIPPING_PLANE_SHADER_NAME = "clipping_plane";
+const char* VertexArrayObject::WATER_OFFSET_SHADER_NAME = "offset";
+const char* VertexArrayObject::LIGHT_V_MATRIX_SHADER_NAME = "l_v_matrix";
 
 glm::vec3 VertexArrayObject::skyColor = glm::vec3(1.0f);
 glm::mat4 VertexArrayObject::v_matrix = glm::mat4(1.0f);
 glm::mat4 VertexArrayObject::p_matrix = glm::mat4(1.0f);
 glm::mat4 VertexArrayObject::vp_matrix = glm::mat4(1.0f);
+glm::mat4 VertexArrayObject::light_v_matrix = glm::mat4(1.0f);
 glm::vec4 VertexArrayObject::light_direction = glm::vec4(1);
 glm::vec4 VertexArrayObject::eye_location = glm::vec4(1);
+glm::vec4 VertexArrayObject::clipping_plane = glm::vec4(0, 1, 0, 1000);
 float VertexArrayObject::fog_density = 0.0;
 float VertexArrayObject::fog_gradient = 1.0f;
+float VertexArrayObject::water_offset = 0.0f;
 
 // Basic Rountines
 VertexArrayObject::VertexArrayObject(int num_vbos) {
@@ -54,6 +61,7 @@ VertexArrayObject::~VertexArrayObject() {
 
 }
 
+// Recycle and Delete Texture
 void VertexArrayObject::clear(int num_vbos) {
 
     recycle(num_vbos);
@@ -66,6 +74,7 @@ void VertexArrayObject::clear(int num_vbos) {
     num_of_textures = 0;
 }
 
+// Recycle but keep texture
 void VertexArrayObject::recycle(int num_vbos) {
     m_matrix = glm::mat4(1.0f);
     visibility = true;
@@ -78,6 +87,7 @@ void VertexArrayObject::recycle(int num_vbos) {
     glGenBuffers(num_vbos, vbos_loc);
 }
 
+// Setters
 void VertexArrayObject::setVisibility(bool visibility) {
     this->visibility = visibility;
 }
@@ -112,16 +122,21 @@ void VertexArrayObject::setEyeLocation(glm::vec4 & location) {
     eye_location = location;
 }
 
+// Get all locations
 void VertexArrayObject::registerShaderProgram(GLuint new_shader_program) {
     shader_program = new_shader_program;
     mvp_loc = glGetUniformLocation(new_shader_program, MVP_SHADER_NAME);
     m_loc = glGetUniformLocation(new_shader_program, M_SHADER_NAME);
     v_loc = glGetUniformLocation(new_shader_program, V_SHADER_NAME);
+    p_loc = glGetUniformLocation(new_shader_program, P_SHADER_NAME);
     light_loc = glGetUniformLocation(new_shader_program, LIGHT_SHADER_NAME);
     eye_loc = glGetUniformLocation(new_shader_program, EYE_SHADER_NAME);
     sky_color = glGetUniformLocation(new_shader_program, SKYCOLOR);
     gradient_loc = glGetUniformLocation(new_shader_program, FOG_GRADIENT_SHADER_NAME);
     density_loc = glGetUniformLocation(new_shader_program, FOG_DENSITY_SHADER_NAME);
+    clipping_plane_loc = glGetUniformLocation(new_shader_program, CLIPPING_PLANE_SHADER_NAME);
+    water_offset_loc = glGetUniformLocation(new_shader_program, WATER_OFFSET_SHADER_NAME);
+    light_v_matrix_loc = glGetUniformLocation(new_shader_program, LIGHT_V_MATRIX_SHADER_NAME);
 }
 
 
@@ -224,6 +239,7 @@ void VertexArrayObject::setColors(vector<glm::vec3> colors) {
 
 }
 
+// Binds a texture from an image name
 void VertexArrayObject::setTexture(char* imageName, char* sampler_name, int interpolation_mode) {
 
     has_texture = true;
@@ -254,6 +270,31 @@ void VertexArrayObject::setTexture(char* imageName, char* sampler_name, int inte
 
 }
 
+// Bind a texture form an id
+void VertexArrayObject::setTexture(GLuint texture_id, char* sampler_name, int interpolation_mode) {
+
+    has_texture = true;
+    if (num_of_textures == 0) {
+	setNumOfTexture(1);
+    }
+    
+    glActiveTexture(GL_TEXTURE0 + texture_index);
+    glEnable(GL_TEXTURE_2D);
+    GLuint uni_loc = glGetUniformLocation(shader_program, sampler_name);
+    glUniform1i(uni_loc, texture_index); 
+    textures_loc[texture_index] = texture_id;
+
+    glBindTexture(GL_TEXTURE_2D, textures_loc[texture_index]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, interpolation_mode);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, interpolation_mode);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    textures_sampler_names[texture_index] = sampler_name;
+    texture_index++;
+}
+
 void VertexArrayObject::setNumOfTexture(int num_of_textures) {
     this->num_of_textures = num_of_textures;
     textures_loc = new GLuint [num_of_textures];
@@ -261,21 +302,25 @@ void VertexArrayObject::setNumOfTexture(int num_of_textures) {
     glGenTextures(num_of_textures, textures_loc);
 }
 
+// Draw the object
 void VertexArrayObject::draw() {
     if (!visibility) return;
 
-    // Use Shader
+    // Use Shader & Uniform
     glUseProgram(shader_program);
-
     glm::mat4 mvp_matrix = vp_matrix * m_matrix;
     glUniformMatrix4fv(mvp_loc, 1, GL_FALSE, glm::value_ptr(mvp_matrix));
     glUniformMatrix4fv(m_loc, 1, GL_FALSE, glm::value_ptr(m_matrix));
     glUniformMatrix4fv(v_loc, 1, GL_FALSE, glm::value_ptr(v_matrix));
+    glUniformMatrix4fv(p_loc, 1, GL_FALSE, glm::value_ptr(p_matrix));
+    glUniformMatrix4fv(light_v_matrix_loc, 1, GL_FALSE, glm::value_ptr(light_v_matrix));
     glUniform3fv(sky_color, 1, glm::value_ptr(skyColor));
     glUniform4fv(light_loc, 1, glm::value_ptr(light_direction));
     glUniform4fv(eye_loc, 1, glm::value_ptr(eye_location));
+    glUniform4fv(clipping_plane_loc, 1, glm::value_ptr(clipping_plane));
     glUniform1f(density_loc, fog_density);
     glUniform1f(gradient_loc, fog_gradient);
+    glUniform1f(water_offset_loc, water_offset);
 
     // Bind Texture
     for (int i = 0; i < num_of_textures; i++) {
@@ -283,7 +328,7 @@ void VertexArrayObject::draw() {
 	glBindTexture(GL_TEXTURE_2D, textures_loc[i]);
     }
     
-
+    // Set rendering Mode
     int renderring_mode = (primitive == POINTS) ? GL_POINTS : GL_TRIANGLES;
     if (primitive == LINES) renderring_mode = GL_LINE_STRIP;
     glBindVertexArray(vao_loc);
@@ -293,6 +338,7 @@ void VertexArrayObject::draw() {
 	glDrawElements(renderring_mode, topology_size, GL_UNSIGNED_INT, nullptr);
     }
 
+    // Unbind
     for (int i = 0; i < num_of_textures; i++) {
 	glActiveTexture(GL_TEXTURE0 + i);
 	glBindTexture(GL_TEXTURE_2D, 0);

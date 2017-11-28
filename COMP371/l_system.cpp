@@ -35,7 +35,7 @@ void LSystem::makeRule(string a, string b) {
 }
 
 
-void LSystem::generate(int times) {
+void LSystem::generate(int times) {			// Takes Number of Iterations
 
     for (int t = 0; t < times; t++) {
 	string newMessage = "";
@@ -45,7 +45,7 @@ void LSystem::generate(int times) {
 
 	    // Find a rule
 	    bool found = false;
-	    for (int r = 0; r < rules.size(); r++) {
+	    for (int r = 0; r < rules.size(); r++) {	// Loop until a rule is found
 		if (s == rules[r].a) {
 		    newMessage += rules[r].b;
 		    found = true;
@@ -66,11 +66,11 @@ string LSystem::getMessage() {
 
 
 void LSystem::getTree(
-	std::vector<glm::vec3> & vertices, 
+	std::vector<glm::vec3> & vertices,	    // Bark Vectors
 	std::vector<unsigned int> & indices, 
 	std::vector<glm::vec2> & uvs, 
 	std::vector<glm::vec3> & normals, 
-	std::vector<glm::vec3> & l_vertices, 
+	std::vector<glm::vec3> & l_vertices,	    // Leaves Vector
 	std::vector<unsigned int> & l_indices, 
 	std::vector<glm::vec2> & l_uvs, 
 	std::vector<glm::vec3> & l_normals) {
@@ -92,57 +92,57 @@ void LSystem::getTree(
 
 	    continue;
 
-	} else if (c == 'f') {
+	} else if (c == 'f') {			    // Move Forward
 
 	    float ran = ((((float)rand() / RAND_MAX) * 2 - 1) * random * curr_len) + curr_len;
 	    glm::vec3 next_pos = curr_pos +  ran * curr_dir;
 	    drawBark(curr_pos, next_pos, curr_tru, vertices, indices, uvs, normals);
 	    curr_pos = next_pos;
 
-	} else if (c == '+') {
+	} else if (c == '+') {			    // Rotate +ve z
 
 	    float ran = (((float)rand() / RAND_MAX) * 2 - 1) * random * alpha + alpha;
 	    glm::mat4 rot = glm::rotate(glm::mat4(1), +ran, glm::vec3(0, 0, 1));
 	    curr_dir = glm::vec3(rot * glm::vec4(curr_dir, 0));
 
-	} else if (c == '-') {
+	} else if (c == '-') {			    // Rotate -ve z
 
 	    float ran = (((float)rand() / RAND_MAX) * 2 - 1) * random * alpha + alpha;
 	    glm::mat4 rot = glm::rotate(glm::mat4(1), -ran, glm::vec3(0, 0, 1));
 	    curr_dir = glm::vec3(rot * glm::vec4(curr_dir, 0));
 
-	} else if (c == '>') {
+	} else if (c == '>') {			    // Rotate +ve x
 
 	    float ran = (((float)rand() / RAND_MAX) * 2 - 1) * random * alpha + alpha;
 	    glm::mat4 rot = glm::rotate(glm::mat4(1), +ran, glm::vec3(1, 0, 0));
 	    curr_dir = glm::vec3(rot * glm::vec4(curr_dir, 0));
 
-	} else if (c == '<') { 
+	} else if (c == '<') {			    // Rotate -ve x
 	
 	    float ran = (((float)rand() / RAND_MAX) * 2 - 1) * random * alpha + alpha;
 	    glm::mat4 rot = glm::rotate(glm::mat4(1), -ran, glm::vec3(1, 0, 0));
 	    curr_dir = glm::vec3(rot * glm::vec4(curr_dir, 0));
 	
-	} else if (c == '^') {
+	} else if (c == '^') {			    // Rotate +ve y
 
 	    float ran = (((float)rand() / RAND_MAX) * 2 - 1) * random * alpha + alpha;
 	    glm::mat4 rot = glm::rotate(glm::mat4(1), +ran, glm::vec3(0, 1, 0));
 	    curr_dir = glm::vec3(rot * glm::vec4(curr_dir, 0));
 	    
-	} else if (c == 'v') {
+	} else if (c == 'v') {			    // Rotate -ve y
 	    
 	    float ran = (((float)rand() / RAND_MAX) * 2 - 1) * random * alpha + alpha;
 	    glm::mat4 rot = glm::rotate(glm::mat4(1), -ran, glm::vec3(0, 1, 0));
 	    curr_dir = glm::vec3(rot * glm::vec4(curr_dir, 0));
 	    
-	} else if (c == '[') {
+	} else if (c == '[') {			    // Push Stack
 
 	    pos_stack.push(curr_pos);
 	    dir_stack.push(curr_dir);
 	    len_stack.push(curr_len);
 	    tru_stack.push(curr_tru);
 
-	} else if (c == ']') {
+	} else if (c == ']') {			    // Pop Stack
 
 	    curr_pos = pos_stack.top();
 	    curr_dir = dir_stack.top();
@@ -153,23 +153,23 @@ void LSystem::getTree(
 	    len_stack.pop();
 	    tru_stack.pop();
 
-	} else if (c == 's') {
+	} else if (c == 's') {			    // Length Multiplier
 
 	    float mult = getMultiplier(i);
 	    curr_len *= mult;
 
-	} else if (c == 'r') {
+	} else if (c == 'r') {			    // Trunc Radius Multiplier
 
 	    float mult = getMultiplier(i);
 	    curr_tru *= mult;
 
-	} else if (c == 'A' || c == 'B' || c == 'C') {
+	} else if (c == 'A' || c == 'B' || c == 'C') {	// Leaf
 	    drawLeaves(curr_pos, curr_dir, curr_tru, l_vertices, l_indices, l_uvs, l_normals);
 	} 
     }
 }
 
-float LSystem::getMultiplier(int & i) {
+float LSystem::getMultiplier(int & i) {		    // String Munipluation
     
     string s = "";
     char c = '-';
@@ -192,6 +192,7 @@ void LSystem::drawBark(
 	std::vector<glm::vec2> & uvs, 
 	std::vector<glm::vec3> & normals) {
 
+    // Setup
     int offset = vertices.size();
     glm::vec3 dir = glm::normalize(end - start);
     glm::vec3 up = glm::vec3(0, 1, 0);
@@ -203,6 +204,7 @@ void LSystem::drawBark(
     glm::mat4 model_matrix = glm::mat4(1.0f);
     model_matrix = translate(model_matrix, pos); 
 
+    // Round off Issue
     if (dot(dir, up) < 0.99) {
 	float angle = acos(glm::dot(up, dir));
 	glm::vec3 rot_axis = glm::normalize(glm::cross(up, dir));
@@ -263,6 +265,7 @@ void LSystem::drawLeaves(
 	std::vector<glm::vec2> & uvs, 
 	std::vector<glm::vec3> & normals) {
 
+	// Setup
 	int offset = vertices.size();
 	float random = (float)rand() / RAND_MAX;
 	float width = random * l_width;

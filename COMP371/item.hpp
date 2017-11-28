@@ -14,21 +14,16 @@ class Item {
 
     public:
 	// Gemoetry & Topology
-	std::vector<glm::vec3> vertices;
-	std::vector<unsigned int> edges;
+	std::vector<glm::vec3> vertices;    
+	std::vector<unsigned int> edges;    // Edges
 	std::vector<glm::vec3> normals;
 	std::vector<glm::vec2> uvs;
-	std::vector<float> d_coeff;
+	std::vector<float> d_coeff;	    // Of containing Plane(to speed up collision)
 	glm::mat4 model_matrix;
 	bool collidable = false;
-	glm::vec3 position;
+	glm::vec3 position;		    // in World Coordinates
 	int type;
 	
-	// Colors
-	glm::vec3 ambient;
-	glm::vec3 diffuse;
-	glm::vec3 specular;
-
 	// VAO
 	VertexArrayObject vao;
 
@@ -50,8 +45,8 @@ class Item {
 	void setCollidable(bool);
 	bool isCollidable();
 	void draw();
-	void clear(int);
-	void recycle(int);
+	void clear(int);		// Clears for resuse
+	void recycle(int);		// Clears while keeping texture(for repeated objects)
 
 	// Getters
 	std::vector<glm::vec3> & getVertices();

@@ -15,6 +15,7 @@ uniform mat4 m_matrix;
 uniform mat4 v_matrix;
 uniform vec4 light_direction;
 uniform vec4 eye_location;
+uniform vec4 clipping_plane;
 
 out float visibility;
 uniform float density;
@@ -22,6 +23,9 @@ uniform float gradient;
 
 void main()
 {
+
+    
+    gl_ClipDistance[0] = dot(m_matrix * vec4(position, 1), clipping_plane);
     gl_Position =  mvp_matrix * vec4(position, 1.0);
     vec4 normal4d =  m_matrix * vec4(normal, 0.0);
     vec4 light4d = light_direction;

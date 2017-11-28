@@ -179,6 +179,7 @@ GLFWwindow* GlUtilities::setupGlWindow(GLuint global_width, GLuint global_height
 void GlUtilities::convexHull(std::vector<glm::vec3> & vertices, std::vector<unsigned int> & indices, std::vector<glm::vec3> & normals) {
 
     
+    // Adapter Method
     QuickHull<float> quickHull;
     std::vector<Vector3<float>> pointCloud;
 
@@ -209,7 +210,7 @@ void GlUtilities::convexHull(std::vector<glm::vec3> & vertices, std::vector<unsi
     
     glm::vec3* arr = new glm::vec3 [vertices.size()];
 
-    
+    // Create Indices 
     for (int i = 0; i < indices.size(); i += 3) {
 	glm::vec3 p1 = vertices[indices[i+0]];
 	glm::vec3 p2 = vertices[indices[i+1]];
@@ -226,6 +227,7 @@ void GlUtilities::convexHull(std::vector<glm::vec3> & vertices, std::vector<unsi
 	
     }   
     
+    // Copy Normals
     normals = std::vector<glm::vec3>(arr, arr + vertices.size());
     delete [] arr;
 
@@ -233,7 +235,7 @@ void GlUtilities::convexHull(std::vector<glm::vec3> & vertices, std::vector<unsi
 }
 
 
-std::vector<glm::vec3> GlUtilities::genRandomRock(float max_r, int points) {
+std::vector<glm::vec3> GlUtilities::genRandomRock(float max_r, int points) {		    // Random Vertices in Sphere
 
     std::vector<glm::vec3> vertices;
     max_r = sqrt(max_r);
@@ -248,7 +250,7 @@ std::vector<glm::vec3> GlUtilities::genRandomRock(float max_r, int points) {
 }
 
 const float PI = 3.14159265359f;
-std::vector<glm::vec2> GlUtilities::genSphericalUVs(std::vector<glm::vec3> & vertices) {
+std::vector<glm::vec2> GlUtilities::genSphericalUVs(std::vector<glm::vec3> & vertices) {    // Spherical Mapping
 
     std::vector<glm::vec2> uvs;
     for (int i = 0; i < vertices.size(); i++) {
